@@ -9,7 +9,7 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-<!-- ================= BỘ BẢO MẬT, MÀN HÌNH 3 ẢNH & NHÃN ĐÚNG VỊ TRÍ ================= -->
+    <!-- ================= BỘ BẢO MẬT, MÀN HÌNH 3 ẢNH & NHÃN KHÁCH ================= -->
     <style>
       /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP */
       #app-lock-overlay {
@@ -23,7 +23,7 @@
         overflow: hidden;
       }
 
-      /* KHUNG BÊN TRÁI: GHÉP 3 BỨC ẢNH SẮC NÉT */
+      /* KHUNG BÊN TRÁI: GHÉP 3 BỨC ẢNH SẮC NÉT (hinh1, hinh2, hinh3) */
       .lock-left-gallery {
         flex: 1.4;
         position: relative;
@@ -47,6 +47,10 @@
         height: 100%;
         object-fit: cover;
         display: block;
+        transition: transform 0.5s ease;
+      }
+      .gallery-item:hover img {
+        transform: scale(1.03);
       }
       .gallery-item.top-span {
         grid-column: 1 / 3;
@@ -211,15 +215,15 @@
         .lock-right-panel { width: 100%; height: 100%; justify-content: center; }
       }
 
-      /* 2. NHÃN CHẾ ĐỘ KHÁCH: CỐ ĐỊNH CHÍNH XÁC VÀO VÙNG KHUNG ĐỎ TRƯỚC SĨ SỐ */
+      /* 2. NHÃN CHẾ ĐỘ KHÁCH: LÙI RA XA VỀ PHÍA TRÁI NÚT 2 LỚP 91 HỌC SINH */
       body.guest-mode::after {
-        display: none !important; /* Xóa bỏ nhãn cũ ở góc trái */
+        display: none !important;
       }
       #guest-badge-fixed {
         display: none;
         position: fixed;
         top: 13px;
-        right: 250px; /* Căn thẳng vào khoảng trống khung đỏ trước nút 2 lớp */
+        right: 340px; /* Lùi hẳn sang trái cách xa cụm 2 lớp 91 học sinh */
         z-index: 50;
         align-items: center;
         gap: 6px;
@@ -312,12 +316,12 @@
       }
     </style>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP 3 ẢNH & KHUNG PHẢI -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP 3 ẢNH (hinh1.jpg, hinh2.jpg, hinh3.jpg) -->
     <div id="app-lock-overlay">
       <div class="lock-left-gallery">
         <!-- ẢNH 1: Học sinh toàn trường -->
         <div class="gallery-item top-span">
-          <img src="bg-truong-1.jpg" onerror="this.src='https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80'" alt="Học sinh THCS Ngô Quyền" />
+          <img src="hinh1.jpg" alt="Học sinh THCS Ngô Quyền" />
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p>Phường Rạch Giá, Tỉnh An Giang • Lễ Khai Giảng Năm học 2026 - 2027</p>
@@ -325,11 +329,11 @@
         </div>
         <!-- ẢNH 2: Tập thể Thầy giáo -->
         <div class="gallery-item">
-          <img src="bg-truong-2.jpg" onerror="this.src='https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80'" alt="Giáo viên Nam THCS Ngô Quyền" />
+          <img src="hinh2.jpg" alt="Tập thể Thầy giáo THCS Ngô Quyền" />
         </div>
         <!-- ẢNH 3: Tập thể Cô giáo -->
         <div class="gallery-item">
-          <img src="bg-truong-3.jpg" onerror="this.src='https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80'" alt="Giáo viên Nữ THCS Ngô Quyền" />
+          <img src="hinh3.jpg" alt="Tập thể Cô giáo THCS Ngô Quyền" />
         </div>
       </div>
 
@@ -362,7 +366,7 @@
       </div>
     </div>
 
-    <!-- NHÃN KHÁCH: CỐ ĐỊNH CHÍNH XÁC Ở THANH TIÊU ĐỀ TRÊN CÙNG -->
+    <!-- NHÃN KHÁCH: CỐ ĐỊNH PHÍA BÊN TRÁI NÚT 2 LỚP 91 HỌC SINH -->
     <div id="guest-badge-fixed">
       <span>👀</span>
       <span>Chế độ xem dành cho khách</span>
@@ -391,7 +395,7 @@
     <script>
       (function() {
         const PASS_ADMIN = "thaybinh123";  // Mật khẩu Admin
-        const PASS_GUEST = "2026"; // Mật khẩu Khách
+        const PASS_GUEST = "khachxem2026"; // Mật khẩu Khách
 
         let currentRole = 'admin';
 
