@@ -17,7 +17,50 @@
     display: none !important;
   }
 </style>
+<script>
+  (function autoLoadFirebase() {
+    try {
+      // 1. Thay thế thông tin của bạn vào bên dưới
+      const firebaseConfig = {
+  apiKey: "AIzaSyDtBGdTinUOZfil4w1x0RvscunoEQrSjb8",
+  authDomain: "app-gvbm-thaybinhtoan.firebaseapp.com",
+  projectId: "app-gvbm-thaybinhtoan",
+  storageBucket: "app-gvbm-thaybinhtoan.firebasestorage.app",
+  messagingSenderId: "570373381434",
+  appId: "1:570373381434:web:3400e16e69642b286c4403"
+};
 
+      // 2. Chuyển thành chuỗi JSON
+      const configStr = JSON.stringify(customFirebaseConfig);
+
+      // 3. Tự động lưu vào các khóa localStorage mà app thường dùng để đọc Firebase
+      const possibleKeys = [
+        'firebase_config',
+        'custom_firebase_config',
+        'firebaseConfig',
+        'co_thuy_ai_firebase_config',
+        'thay_binh_ai_firebase_config'
+      ];
+
+      possibleKeys.forEach(k => {
+        localStorage.setItem(k, configStr);
+      });
+
+      // 4. Tự động điền trước vào khung nhập liệu trên giao diện (nếu app mở tab cấu hình)
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const textarea = document.querySelector('textarea');
+          if (textarea && !textarea.value) {
+            textarea.value = configStr;
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }, 1000);
+      });
+    } catch (err) {
+      console.warn("Lỗi auto nạp Firebase config:", err);
+    }
+  })();
+</script>
 <script>
   // 1. Tự động đánh cờ chặn nạp dữ liệu mẫu vào bộ nhớ trình duyệt
   (function preventSampleData() {
