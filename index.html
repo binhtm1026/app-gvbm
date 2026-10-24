@@ -9,9 +9,9 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-<!-- ================= BỘ BẢO MẬT VÀ PHÂN QUYỀN KHÁCH XEM ================= -->
+<!-- ================= BỘ BẢO MẬT, PHÂN QUYỀN & NÚT ĐĂNG XUẤT ================= -->
     <style>
-      /* Giao diện màn hình đăng nhập khóa ứng dụng */
+      /* 1. Giao diện màn hình đăng nhập khóa ứng dụng */
       #app-lock-overlay {
         position: fixed;
         inset: 0;
@@ -81,7 +81,32 @@
         display: none;
       }
 
-      /* Chế độ KHÁCH: Banner thông báo chế độ chỉ xem ở góc màn hình */
+      /* 2. Nút Đăng xuất ở góc dưới bên trái thanh chức năng */
+      #btn-app-logout {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        z-index: 99998;
+        display: none; /* Ẩn khi đang ở màn hình khóa, chỉ hiện khi đã đăng nhập */
+        align-items: center;
+        gap: 8px;
+        background: #dc2626;
+        color: #ffffff;
+        border: 1px solid #ef4444;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        transition: all 0.2s ease;
+      }
+      #btn-app-logout:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+      }
+
+      /* 3. Chế độ KHÁCH (CHỈ XEM) */
       body.guest-mode::after {
         content: "👀 Chế độ xem dành cho khách (Không có quyền chỉnh sửa)";
         position: fixed;
@@ -98,15 +123,13 @@
         pointer-events: none;
       }
 
-      /* Chế độ KHÁCH: Khóa hoặc ẩn các nút thêm/sửa/xóa và các ô nhập liệu */
+      /* Khóa các ô nhập liệu và ẩn nút thêm/sửa/xóa khi là khách */
       body.guest-mode input:not(#lock-pass),
       body.guest-mode textarea,
       body.guest-mode select {
         pointer-events: none !important;
         opacity: 0.8 !important;
       }
-
-      /* Vô hiệu hóa nút có biểu tượng sửa, xóa, lưu, tạo mới */
       body.guest-mode button:has(svg.lucide-trash-2),
       body.guest-mode button:has(svg.lucide-edit),
       body.guest-mode button:has(svg.lucide-pencil),
@@ -116,6 +139,7 @@
       }
     </style>
 
+    <!-- Màn hình khóa đăng nhập -->
     <div id="app-lock-overlay">
       <div class="lock-box">
         <h2>App Thầy Minh Bình</h2>
@@ -126,29 +150,42 @@
       </div>
     </div>
 
+    <!-- Nút Đăng xuất ở thanh chức năng bên dưới -->
+    <button id="btn-app-logout" title="Đăng xuất khỏi app và khóa màn hình">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+      Đăng xuất
+    </button>
+
     <script>
       (function() {
-        // --- THẦY CÀI ĐẶT 2 MẬT KHẨU TẠI ĐÂY ---
-        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền chỉnh sửa của Thầy
-        const PASS_GUEST = "1234"; // Mật khẩu gửi cho người khác (chỉ được xem)
+        // Cài đặt 2 mật khẩu truy cập
+        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền
+        const PASS_GUEST = "khachxem2026"; // Mật khẩu xem cho khách
 
         function applyRole(role) {
           const overlay = document.getElementById('app-lock-overlay');
+          const logoutBtn = document.getElementById('btn-app-logout');
+
           if (overlay) overlay.style.display = 'none';
+          if (logoutBtn) logoutBtn.style.display = 'flex'; // Hiển thị nút đăng xuất khi đã mở khóa
 
           if (role === 'guest') {
             document.body.classList.add('guest-mode');
 
-            // Quét định kỳ để vô hiệu hóa mọi nút hành động ghi đè dữ liệu
+            // Ẩn định kỳ các nút thêm/sửa/xóa trên giao diện
             setInterval(() => {
               const buttons = document.querySelectorAll('button');
               buttons.forEach(btn => {
+                if (btn.id === 'btn-app-logout') return; // Không ẩn nút đăng xuất
                 const text = (btn.innerText || '').toLowerCase();
                 const dangerousKeywords = [
                   'thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 
                   'ghi nhận', 'kết nối', 'cài đặt', 'reset', 'đồng bộ'
                 ];
-                // Nếu nút chứa các từ khóa chỉnh sửa nhưng KHÔNG phải nút chuyển tab thanh menu
                 const isNavMenu = btn.closest('nav') || btn.closest('aside') || btn.className.includes('nav');
                 if (!isNavMenu && dangerousKeywords.some(kw => text.includes(kw))) {
                   btn.style.setProperty('display', 'none', 'important');
@@ -158,7 +195,26 @@
           }
         }
 
-        // Kiểm tra xem máy này đã mở khóa trước đó chưa
+        // Xử lý khi nhấn nút ĐĂNG XUẤT
+        function handleLogout() {
+          // Xóa phiên làm việc
+          sessionStorage.removeItem('user_access_role');
+          
+          // Khóa lại màn hình
+          const overlay = document.getElementById('app-lock-overlay');
+          const logoutBtn = document.getElementById('btn-app-logout');
+          const passInput = document.getElementById('lock-pass');
+          const err = document.getElementById('lock-err');
+
+          document.body.classList.remove('guest-mode');
+          if (err) err.style.display = 'none';
+          if (passInput) passInput.value = '';
+          if (logoutBtn) logoutBtn.style.display = 'none';
+          if (overlay) overlay.style.display = 'flex';
+          if (passInput) passInput.focus();
+        }
+
+        // Tự động khôi phục nếu đang trong phiên đăng nhập
         const savedRole = sessionStorage.getItem('user_access_role');
         if (savedRole) {
           window.addEventListener('DOMContentLoaded', () => applyRole(savedRole));
@@ -168,6 +224,7 @@
           const passInput = document.getElementById('lock-pass');
           const btn = document.getElementById('lock-btn');
           const err = document.getElementById('lock-err');
+          const logoutBtn = document.getElementById('btn-app-logout');
 
           function checkPass() {
             const val = passInput.value.trim();
@@ -186,10 +243,11 @@
           if (passInput) passInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkPass();
           });
+          if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
         });
       })();
     </script>
-<style>
+    <!-- ====================================================================== --><style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
   button[class*="fuchsia"],
