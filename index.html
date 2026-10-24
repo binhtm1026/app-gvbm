@@ -9,84 +9,155 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-<!-- ================= BỘ BẢO MẬT, THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT ================= -->
+ <!-- ================= GIAO DIỆN ĐĂNG NHẬP MỚI & BẢO MẬT ================= -->
     <style>
-      /* 1. Màn hình khóa đăng nhập */
+      /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP HIỆN ĐẠI (CÓ HÌNH ẢNH NỀN LỚP HỌC & TRƯỜNG HỌC) */
       #app-lock-overlay {
         position: fixed;
         inset: 0;
-        background: #0f172a;
         z-index: 999999;
         display: flex;
         align-items: center;
         justify-content: center;
         font-family: system-ui, -apple-system, sans-serif;
         color: #f8fafc;
+        /* Hình nền lớp học hiện đại, có học sinh và không gian công nghệ giáo dục */
+        background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.88)),
+                    url('https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+        backdrop-filter: blur(8px);
       }
       .lock-box {
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 32px;
+        background: rgba(30, 41, 59, 0.88);
+        border: 1.5px solid rgba(56, 189, 248, 0.4);
+        border-radius: 20px;
+        padding: 32px 28px;
         width: 100%;
-        max-width: 400px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        max-width: 420px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.2);
         text-align: center;
+        backdrop-filter: blur(16px);
+        animation: lockBoxFadeIn 0.35s ease-out;
+      }
+      @keyframes lockBoxFadeIn {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .lock-school-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(2, 132, 199, 0.25);
+        border: 1px solid #38bdf8;
+        color: #7dd3fc;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 14px;
       }
       .lock-box h2 {
-        margin: 0 0 8px 0;
+        margin: 0 0 6px 0;
         font-size: 22px;
-        font-weight: 700;
-        color: #38bdf8;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.3px;
       }
       .lock-box p {
-        margin: 0 0 24px 0;
-        font-size: 14px;
+        margin: 0 0 20px 0;
+        font-size: 13.5px;
         color: #94a3b8;
       }
       .lock-box input {
         width: 100%;
         padding: 12px 16px;
-        border-radius: 8px;
-        border: 1px solid #475569;
-        background: #0f172a;
+        border-radius: 10px;
+        border: 1.5px solid #475569;
+        background: rgba(15, 23, 42, 0.9);
         color: #f8fafc;
-        font-size: 16px;
+        font-size: 15px;
         box-sizing: border-box;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
       }
       .lock-box input:focus {
         border-color: #38bdf8;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
       }
       .lock-box button {
         width: 100%;
         padding: 12px;
-        border-radius: 8px;
+        border-radius: 10px;
         border: none;
-        background: #2563eb;
+        background: linear-gradient(135deg, #0284c7, #2563eb);
         color: #fff;
-        font-size: 16px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 700;
         cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
       }
       .lock-box button:hover {
-        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
       }
       .lock-err {
         color: #f87171;
-        font-size: 13px;
-        margin-top: 12px;
+        font-size: 12.5px;
+        margin-top: 10px;
         display: none;
       }
 
-      /* 2. Khung thông tin tác giả ôm gọn theo cột menu trái */
+      /* 2. CHẾ ĐỘ KHÁCH: NHÃN ĐẶT NGAY GIỮA HÀNG MENU TRÊN CÙNG */
+      #guest-badge-center {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #9a3412, #c2410c);
+        color: #ffffff;
+        border: 1px solid #fdba74;
+        padding: 5px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(194, 65, 12, 0.35);
+        pointer-events: none;
+        white-space: nowrap;
+        animation: guestBadgePulse 2s infinite ease-in-out;
+      }
+      @keyframes guestBadgePulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.4); }
+        50% { box-shadow: 0 0 0 6px rgba(251, 146, 60, 0); }
+      }
+      body.guest-mode #guest-badge-center {
+        display: inline-flex !important;
+      }
+
+      /* Khóa thao tác nhập liệu khi ở chế độ khách */
+      body.guest-mode input:not(#lock-pass),
+      body.guest-mode textarea,
+      body.guest-mode select {
+        pointer-events: none !important;
+        opacity: 0.8 !important;
+      }
+      body.guest-mode button:has(svg.lucide-trash-2),
+      body.guest-mode button:has(svg.lucide-edit),
+      body.guest-mode button:has(svg.lucide-pencil),
+      body.guest-mode button:has(svg.lucide-plus),
+      body.guest-mode button:has(svg.lucide-save) {
+        display: none !important;
+      }
+
+      /* 3. KHUNG THÔNG TIN TÁC GIẢ & NÚT ĐĂNG XUẤT TRÊN MENU BÊN TRÁI */
       #custom-teacher-wrapper {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
         padding: 4px 6px 6px 6px !important;
-        margin: 0 !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
       }
       #teacher-info-card {
         background: linear-gradient(135deg, #0e3b68, #0369a1);
@@ -116,8 +187,6 @@
       #teacher-info-card .card-row b {
         color: #bae6fd;
       }
-
-      /* Nút Đăng xuất màu đỏ nằm ngay dưới */
       #btn-app-logout {
         display: flex !important;
         align-items: center !important;
@@ -134,55 +203,33 @@
         cursor: pointer !important;
         box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35) !important;
         box-sizing: border-box !important;
-        margin-top: 6px !important;
       }
       #btn-app-logout:hover {
         background: #b91c1c !important;
       }
-
-      /* 3. Phân quyền Khách (Chỉ xem) */
-      body.guest-mode::after {
-        content: "👀 Chế độ xem dành cho khách (Không có quyền chỉnh sửa)";
-        position: fixed;
-        top: 12px;
-        right: 12px;
-        background: #b45309;
-        color: #fff;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        z-index: 99999;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        pointer-events: none;
-      }
-      body.guest-mode input:not(#lock-pass),
-      body.guest-mode textarea,
-      body.guest-mode select {
-        pointer-events: none !important;
-        opacity: 0.8 !important;
-      }
-      body.guest-mode button:has(svg.lucide-trash-2),
-      body.guest-mode button:has(svg.lucide-edit),
-      body.guest-mode button:has(svg.lucide-pencil),
-      body.guest-mode button:has(svg.lucide-plus),
-      body.guest-mode button:has(svg.lucide-save) {
-        display: none !important;
-      }
     </style>
 
-    <!-- Màn hình khóa khi mở web -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP (TRƯỜNG THCS NGÔ QUYỀN) -->
     <div id="app-lock-overlay">
       <div class="lock-box">
+        <div class="lock-school-badge">🏫 TRƯỜNG THCS NGÔ QUYỀN</div>
         <h2>App Thầy Minh Bình</h2>
-        <p>Vui lòng nhập mật khẩu truy cập</p>
-        <input type="password" id="lock-pass" placeholder="Nhập mật khẩu..." autofocus />
-        <button id="lock-btn">Truy cập</button>
-        <div class="lock-err" id="lock-err">Mật khẩu không chính xác!</div>
+        <p>Hệ thống Quản lý học tập & Hỗ trợ Giảng dạy AI</p>
+        <input type="password" id="lock-pass" placeholder="Nhập mật khẩu truy cập..." autofocus />
+        <button id="lock-btn">Vào ứng dụng</button>
+        <div class="lock-err" id="lock-err">Mật khẩu không chính xác! Vui lòng thử lại.</div>
       </div>
     </div>
 
-    <!-- Mẫu khung thông tin & nút đăng xuất -->
+    <!-- MẪU NHÃN CHẾ ĐỘ KHÁCH (CHÈN VÀO GIỮA THANH TIÊU ĐỀ TRÊN CÙNG) -->
+    <template id="tpl-guest-badge">
+      <div id="guest-badge-center">
+        <span>👀</span>
+        <span>Chế độ xem dành cho khách (Không có quyền chỉnh sửa)</span>
+      </div>
+    </template>
+
+    <!-- MẪU KHUNG THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT (TRONG MENU TRÁI) -->
     <template id="tpl-teacher-section">
       <div id="custom-teacher-wrapper">
         <div id="teacher-info-card">
@@ -204,19 +251,52 @@
 
     <script>
       (function() {
-        const PASS_ADMIN = "thaybinh123";
-        const PASS_GUEST = "2026";
+        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền của Thầy
+        const PASS_GUEST = "2026"; // Mật khẩu xem cho khách
 
-        // Tự động chèn ĐÚNG vào phía trên nút "Giao diện & Phối màu"
+        // 1. Tự động chèn nhãn Khách vào giữa thanh tiêu đề trên cùng (cùng hàng với Quản lý lớp học)
+        function injectGuestBadge() {
+          if (document.getElementById('guest-badge-center')) return;
+          if (!document.body.classList.contains('guest-mode')) return;
+
+          // Tìm tiêu đề ở thanh trên cùng (ví dụ: Tổng quan, Quản lý lớp học)
+          const headings = Array.from(document.querySelectorAll('h1, h2, h3, div'));
+          const headerTitle = headings.find(el => {
+            const txt = (el.innerText || '').trim();
+            return (txt === 'Quản lý lớp học' || txt === 'Tổng quan' || txt === 'Quản lý học sinh') && el.offsetWidth > 0;
+          });
+
+          if (headerTitle) {
+            const headerRow = headerTitle.closest('header') || headerTitle.parentElement;
+            if (headerRow) {
+              const tpl = document.getElementById('tpl-guest-badge');
+              if (tpl) {
+                const clone = tpl.content.cloneNode(true);
+                // Tạo vùng bọc linh hoạt ở giữa nếu cần
+                headerRow.style.position = 'relative';
+                headerRow.appendChild(clone);
+
+                const badge = document.getElementById('guest-badge-center');
+                if (badge) {
+                  badge.style.position = 'absolute';
+                  badge.style.left = '50%';
+                  badge.style.top = '50%';
+                  badge.style.transform = 'translate(-50%, -50%)';
+                  badge.style.zIndex = '999';
+                }
+              }
+            }
+          }
+        }
+
+        // 2. Chèn thông tin tác giả và nút đăng xuất vào menu bên trái
         function injectTeacherCard() {
           if (document.getElementById('custom-teacher-wrapper')) return;
 
-          // 1. Tìm nút "Giao diện & Phối màu" ở góc dưới thanh menu
           const allButtons = Array.from(document.querySelectorAll('button'));
           const themeBtn = allButtons.find(b => (b.innerText || '').includes('Giao diện & Phối màu'));
 
           if (themeBtn) {
-            // Tìm container trực tiếp chứa nút này
             let parentBox = themeBtn;
             while (parentBox.parentElement && parentBox.parentElement.querySelectorAll('button').length <= 4) {
               parentBox = parentBox.parentElement;
@@ -225,7 +305,6 @@
             const tpl = document.getElementById('tpl-teacher-section');
             if (tpl && parentBox && parentBox.parentNode) {
               const clone = tpl.content.cloneNode(true);
-              // Chèn ngay phía trên khối "Giao diện & Phối màu"
               parentBox.parentNode.insertBefore(clone, parentBox);
 
               const logoutBtn = document.getElementById('btn-app-logout');
@@ -242,7 +321,10 @@
 
           if (role === 'guest') {
             document.body.classList.add('guest-mode');
+            injectGuestBadge();
+
             setInterval(() => {
+              injectGuestBadge();
               const buttons = document.querySelectorAll('button');
               buttons.forEach(btn => {
                 if (btn.id === 'btn-app-logout') return;
@@ -262,8 +344,10 @@
           const overlay = document.getElementById('app-lock-overlay');
           const passInput = document.getElementById('lock-pass');
           const err = document.getElementById('lock-err');
+          const guestBadge = document.getElementById('guest-badge-center');
 
           document.body.classList.remove('guest-mode');
+          if (guestBadge) guestBadge.remove();
           if (err) err.style.display = 'none';
           if (passInput) passInput.value = '';
           if (overlay) overlay.style.display = 'flex';
@@ -299,13 +383,17 @@
           });
 
           injectTeacherCard();
-          const observer = new MutationObserver(injectTeacherCard);
+          const observer = new MutationObserver(() => {
+            injectTeacherCard();
+            if (document.body.classList.contains('guest-mode')) {
+              injectGuestBadge();
+            }
+          });
           observer.observe(document.body, { childList: true, subtree: true });
         });
       })();
     </script>
-    <!-- ========================================================================================== -->
-    
+    <!-- ========================================================================================== -->   
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
