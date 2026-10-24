@@ -9,9 +9,9 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-<!-- ================= BỘ THÔNG TIN GIÁO VIÊN & ĐĂNG XUẤT ================= -->
+<!-- ================= BỘ THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT (ĐẶT ĐÚNG TRONG MENU) ================= -->
     <style>
-      /* 1. Màn hình khóa đăng nhập */
+      /* 1. Màn hình khóa bảo vệ */
       #app-lock-overlay {
         position: fixed;
         inset: 0;
@@ -69,7 +69,6 @@
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s;
       }
       .lock-box button:hover {
         background: #1d4ed8;
@@ -81,59 +80,71 @@
         display: none;
       }
 
-      /* 2. Khung thẻ thông tin giáo viên nổi bật */
+      /* 2. Hộp chứa khớp kích thước thanh menu trái */
+      #custom-teacher-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 8px 4px 8px;
+        box-sizing: border-box;
+        width: 100%;
+      }
+
+      /* Khung thẻ thông tin giáo viên (Màu sắc nổi bật, gọn gàng vừa vặn trong cột) */
       #teacher-info-card {
-        background: linear-gradient(135deg, #1e3a8a, #0369a1);
-        border: 1.5px solid #38bdf8;
-        border-radius: 12px;
-        padding: 14px;
-        margin: 12px 10px 8px 10px;
-        box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.4);
+        background: linear-gradient(135deg, #0e3b68, #0369a1);
+        border: 1px solid #38bdf8;
+        border-radius: 8px;
+        padding: 8px 10px;
+        box-shadow: 0 4px 12px rgba(3, 105, 161, 0.35);
         color: #f0f9ff;
-        font-family: inherit;
-        font-size: 12.5px;
-        line-height: 1.5;
+        font-size: 11px;
+        line-height: 1.45;
+        box-sizing: border-box;
+        width: 100%;
       }
       #teacher-info-card .card-title {
         font-weight: 700;
-        font-size: 14px;
+        font-size: 11.5px;
         color: #fde047;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
+        letter-spacing: 0.3px;
       }
       #teacher-info-card .card-row {
-        margin-bottom: 4px;
+        margin-bottom: 2px;
+        word-break: break-word;
       }
       #teacher-info-card .card-row b {
         color: #bae6fd;
       }
 
-      /* 3. Nút Đăng xuất nằm ngay dưới khung thông tin */
+      /* Nút Đăng xuất màu đỏ nằm liền dưới khung thông tin */
       #btn-app-logout {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        width: calc(100% - 20px);
-        margin: 0 10px 14px 10px;
+        gap: 6px;
+        width: 100%;
         background: #dc2626;
         color: #ffffff;
         border: 1px solid #ef4444;
-        padding: 9px;
-        border-radius: 8px;
-        font-size: 13px;
+        padding: 7px 10px;
+        border-radius: 7px;
+        font-size: 12px;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+        transition: background 0.15s ease;
+        box-sizing: border-box;
       }
       #btn-app-logout:hover {
         background: #b91c1c;
       }
 
-      /* 4. Chế độ Khách (Chỉ xem) */
+      /* 3. Chế độ Khách (Chỉ xem) */
       body.guest-mode::after {
         content: "👀 Chế độ xem dành cho khách (Không có quyền chỉnh sửa)";
         position: fixed;
@@ -164,7 +175,7 @@
       }
     </style>
 
-    <!-- Màn hình khóa đăng nhập -->
+    <!-- Màn hình khóa khi mở web -->
     <div id="app-lock-overlay">
       <div class="lock-box">
         <h2>App Thầy Minh Bình</h2>
@@ -175,17 +186,17 @@
       </div>
     </div>
 
-    <!-- Mẫu khung thông tin và nút Đăng xuất để chèn vào thanh menu -->
+    <!-- Mẫu khung thông tin & nút đăng xuất -->
     <template id="tpl-teacher-section">
       <div id="custom-teacher-wrapper">
         <div id="teacher-info-card">
           <div class="card-title">👨‍🏫 THÔNG TIN TÁC GIẢ</div>
           <div class="card-row"><b>Giáo viên:</b> Tạ Minh Bình</div>
-          <div class="card-row"><b>Đơn vị:</b> Trường THCS Ngô Quyền, P. Rạch Giá, T. An Giang</div>
-          <div class="card-row"><b>Điện thoại:</b> <span style="color:#fde047; font-weight:600;">0943 799 009</span></div>
+          <div class="card-row"><b>Đơn vị:</b> THCS Ngô Quyền, P. Rạch Giá, T. An Giang</div>
+          <div class="card-row"><b>Điện thoại:</b> <span style="color:#fde047; font-weight:700;">0943 799 009</span></div>
         </div>
         <button id="btn-app-logout" type="button" title="Đăng xuất khỏi app và khóa màn hình">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -197,35 +208,32 @@
 
     <script>
       (function() {
-        const PASS_ADMIN = "thaybinh123";
-        const PASS_GUEST = "2026";
+        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền
+        const PASS_GUEST = "khachxem2026"; // Mật khẩu xem cho khách
 
-        // Tự động chèn khung thông tin vào thanh menu chính
+        // Hàm chèn chính xác vào ngay dưới "Cài đặt và sao lưu" trong thanh bên trái
         function injectTeacherCard() {
           if (document.getElementById('custom-teacher-wrapper')) return;
 
-          // Tìm nút "Cài đặt và sao lưu" trong thanh menu
-          const elements = Array.from(document.querySelectorAll('button, div, a'));
-          const settingBtn = elements.find(el => {
+          // Tìm phần tử "Cài đặt và sao lưu"
+          const allElements = Array.from(document.querySelectorAll('button, a, div'));
+          const settingBtn = allElements.find(el => {
             const txt = (el.innerText || '').trim();
-            return txt.includes('Cài đặt và sao lưu');
+            return txt.includes('Cài đặt và sao lưu') && el.children.length > 0;
           });
 
           if (settingBtn) {
-            // Xác định thẻ cha chứa nút (mục danh mục)
-            let targetNode = settingBtn;
-            while (targetNode.parentElement && 
-                   !targetNode.parentElement.tagName.toLowerCase().match(/^(aside|nav)$/) &&
-                   targetNode.parentElement.querySelectorAll('button').length <= 2) {
-              targetNode = targetNode.parentElement;
+            // Lấy khối chứa của nút "Cài đặt và sao lưu"
+            let target = settingBtn;
+            if (target.parentElement && target.parentElement.children.length === 1) {
+              target = target.parentElement;
             }
 
             const tpl = document.getElementById('tpl-teacher-section');
-            if (tpl && targetNode && targetNode.parentNode) {
+            if (tpl && target && target.parentNode) {
               const clone = tpl.content.cloneNode(true);
-              targetNode.parentNode.insertBefore(clone, targetNode.nextSibling);
+              target.parentNode.insertBefore(clone, target.nextSibling);
 
-              // Gắn sự kiện click cho nút Đăng xuất
               const logoutBtn = document.getElementById('btn-app-logout');
               if (logoutBtn) {
                 logoutBtn.addEventListener('click', handleLogout);
@@ -296,14 +304,14 @@
             if (e.key === 'Enter') checkPass();
           });
 
-          // Quét và chèn khung thông tin vào đúng vị trí menu
+          // Quét và chèn liên tục khi React render xong giao diện
           injectTeacherCard();
           const observer = new MutationObserver(injectTeacherCard);
           observer.observe(document.body, { childList: true, subtree: true });
         });
       })();
     </script>
-    <!-- ====================================================================== -->
+    <!-- ========================================================================================== -->
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
