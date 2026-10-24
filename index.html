@@ -9,7 +9,8 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <!-- ================= BỘ BẢO MẬT, MÀN HÌNH 3D & NHÃN KHÁCH ================= -->
+
+    <!-- ================= BỘ BẢO MẬT, MÀN HÌNH ĐĂNG NHẬP ẢNH THẦY TOÁN ================= -->
     <style>
       /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP */
       #app-lock-overlay {
@@ -23,7 +24,7 @@
         overflow: hidden;
       }
 
-      /* KHUNG BÊN TRÁI: ẢNH ĐỒ HỌA 3D LỚP HỌC HIỆN ĐẠI (SẮC NÉT & KHÔNG LO LỖI ĐƯỜNG DẪN) */
+      /* KHUNG BÊN TRÁI: ẢNH TIẾT DẠY TOÁN THẦY MINH BÌNH */
       .lock-left-gallery {
         flex: 1.4;
         position: relative;
@@ -39,7 +40,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center top; /* Giữ trọng tâm hình ảnh thầy giáo và bảng viết */
+        object-position: center top;
         display: block;
         filter: brightness(1) contrast(1.02);
       }
@@ -47,21 +48,21 @@
         position: absolute;
         bottom: 0;
         inset-inline: 0;
-        background: linear-gradient(to top, rgba(11, 17, 32, 0.96) 25%, rgba(11, 17, 32, 0) 100%);
-        padding: 36px 32px 24px 32px;
+        background: linear-gradient(to top, rgba(11, 17, 32, 0.95) 25%, rgba(11, 17, 32, 0) 100%);
+        padding: 32px 28px 20px 28px;
         color: #fff;
       }
       .gallery-overlay-text h1 {
         margin: 0;
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 800;
         color: #38bdf8;
         letter-spacing: 0.5px;
         text-shadow: 0 2px 8px rgba(0,0,0,0.6);
       }
       .gallery-overlay-text p {
-        margin: 6px 0 0 0;
-        font-size: 14px;
+        margin: 5px 0 0 0;
+        font-size: 13.5px;
         color: #e2e8f0;
         line-height: 1.5;
       }
@@ -205,7 +206,7 @@
         .lock-right-panel { width: 100%; height: 100%; justify-content: center; }
       }
 
-      /* 2. NHÃN CHẾ ĐỘ KHÁCH: KÉO GẦN LẠI NÚT 2 LỚP • 91 HỌC SINH (right: 265px) */
+      /* 2. NHÃN CHẾ ĐỘ KHÁCH: CỐ ĐỊNH TRƯỚC NÚT 2 LỚP • 91 HỌC SINH */
       body.guest-mode::after {
         display: none !important;
       }
@@ -213,7 +214,7 @@
         display: none;
         position: fixed;
         top: 13px;
-        right: 265px; /* Thu hẹp khoảng cách lại gần nút 2 lớp */
+        right: 265px;
         z-index: 50;
         align-items: center;
         gap: 6px;
@@ -232,7 +233,7 @@
         display: inline-flex !important;
       }
 
-      /* Khóa quyền sửa ở chế độ khách */
+      /* Khóa thao tác nhập liệu khi ở chế độ khách */
       body.guest-mode input:not(#lock-pass),
       body.guest-mode textarea,
       body.guest-mode select {
@@ -247,7 +248,7 @@
         display: none !important;
       }
 
-      /* 3. KHUNG THÔNG TIN TÁC GIẢ & NÚT ĐĂNG XUẤT NẰM GỌN TRONG MENU TRÁI */
+      /* 3. KHUNG THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT TRÊN MENU TRÁI */
       #custom-teacher-wrapper {
         display: flex !important;
         flex-direction: column !important;
@@ -306,9 +307,11 @@
       }
     </style>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP (ẢNH 3D LỚP HỌC THCS VÀ KHUNG PHẢI) -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="app-lock-overlay">
-      <div class="gallery-single-poster">
+      <!-- CỘT TRÁI: ẢNH THẦY TOÁN -->
+      <div class="lock-left-gallery">
+        <div class="gallery-single-poster">
           <img src="Thaytoan.png" alt="Tiết dạy Toán Thầy Minh Bình" />
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
@@ -317,7 +320,7 @@
         </div>
       </div>
 
-      <!-- KHUNG BÊN PHẢI -->
+      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô -->
       <div class="lock-right-panel">
         <div class="panel-header">
           <div class="badge">HỆ THỐNG GIÁO DỤC SỐ AI</div>
@@ -346,7 +349,7 @@
       </div>
     </div>
 
-    <!-- NHÃN KHÁCH: ĐẶT SÁT BÊN TRÁI NÚT 2 LỚP • 91 HỌC SINH -->
+    <!-- NHÃN CHẾ ĐỘ KHÁCH -->
     <div id="guest-badge-fixed">
       <span>👀</span>
       <span>Chế độ xem dành cho khách</span>
@@ -374,8 +377,8 @@
 
     <script>
       (function() {
-        const PASS_ADMIN = "thaybinh123";  // Mật khẩu Admin
-        const PASS_GUEST = "2026"; // Mật khẩu Khách
+        const PASS_ADMIN = "thaybinh123";  // Mật khẩu Quản trị
+        const PASS_GUEST = "2026"; // Mật khẩu Khách xem
 
         let currentRole = 'admin';
 
@@ -406,7 +409,7 @@
           if (passInput) passInput.focus();
         };
 
-        // Chèn khung thông tin vào menu bên trái (ngay trên Giao diện & Phối màu)
+        // Chèn thông tin tác giả và nút đăng xuất vào menu bên trái
         function injectTeacherCard() {
           if (document.getElementById('custom-teacher-wrapper')) return;
 
