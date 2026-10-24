@@ -9,9 +9,9 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-<!-- ================= BỘ BẢO MẬT, PHÂN QUYỀN & NÚT ĐĂNG XUẤT ================= -->
+<!-- ================= BỘ THÔNG TIN GIÁO VIÊN & ĐĂNG XUẤT ================= -->
     <style>
-      /* 1. Giao diện màn hình đăng nhập khóa ứng dụng */
+      /* 1. Màn hình khóa đăng nhập */
       #app-lock-overlay {
         position: fixed;
         inset: 0;
@@ -81,32 +81,59 @@
         display: none;
       }
 
-      /* 2. Nút Đăng xuất ở góc dưới bên trái thanh chức năng */
-      #btn-app-logout {
-        position: fixed;
-        bottom: 12px;
-        left: 12px;
-        z-index: 99998;
-        display: none; /* Ẩn khi đang ở màn hình khóa, chỉ hiện khi đã đăng nhập */
+      /* 2. Khung thẻ thông tin giáo viên nổi bật */
+      #teacher-info-card {
+        background: linear-gradient(135deg, #1e3a8a, #0369a1);
+        border: 1.5px solid #38bdf8;
+        border-radius: 12px;
+        padding: 14px;
+        margin: 12px 10px 8px 10px;
+        box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.4);
+        color: #f0f9ff;
+        font-family: inherit;
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+      #teacher-info-card .card-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: #fde047;
+        margin-bottom: 6px;
+        display: flex;
         align-items: center;
+        gap: 6px;
+      }
+      #teacher-info-card .card-row {
+        margin-bottom: 4px;
+      }
+      #teacher-info-card .card-row b {
+        color: #bae6fd;
+      }
+
+      /* 3. Nút Đăng xuất nằm ngay dưới khung thông tin */
+      #btn-app-logout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 8px;
+        width: calc(100% - 20px);
+        margin: 0 10px 14px 10px;
         background: #dc2626;
         color: #ffffff;
         border: 1px solid #ef4444;
-        padding: 8px 16px;
+        padding: 9px;
         border-radius: 8px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+        transition: all 0.2s;
       }
       #btn-app-logout:hover {
         background: #b91c1c;
-        transform: translateY(-1px);
       }
 
-      /* 3. Chế độ KHÁCH (CHỈ XEM) */
+      /* 4. Chế độ Khách (Chỉ xem) */
       body.guest-mode::after {
         content: "👀 Chế độ xem dành cho khách (Không có quyền chỉnh sửa)";
         position: fixed;
@@ -122,8 +149,6 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         pointer-events: none;
       }
-
-      /* Khóa các ô nhập liệu và ẩn nút thêm/sửa/xóa khi là khách */
       body.guest-mode input:not(#lock-pass),
       body.guest-mode textarea,
       body.guest-mode select {
@@ -150,42 +175,77 @@
       </div>
     </div>
 
-    <!-- Nút Đăng xuất ở thanh chức năng bên dưới -->
-    <button id="btn-app-logout" title="Đăng xuất khỏi app và khóa màn hình">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-      </svg>
-      Đăng xuất
-    </button>
+    <!-- Mẫu khung thông tin và nút Đăng xuất để chèn vào thanh menu -->
+    <template id="tpl-teacher-section">
+      <div id="custom-teacher-wrapper">
+        <div id="teacher-info-card">
+          <div class="card-title">👨‍🏫 THÔNG TIN TÁC GIẢ</div>
+          <div class="card-row"><b>Giáo viên:</b> Tạ Minh Bình</div>
+          <div class="card-row"><b>Đơn vị:</b> Trường THCS Ngô Quyền, P. Rạch Giá, T. An Giang</div>
+          <div class="card-row"><b>Điện thoại:</b> <span style="color:#fde047; font-weight:600;">0943 799 009</span></div>
+        </div>
+        <button id="btn-app-logout" type="button" title="Đăng xuất khỏi app và khóa màn hình">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Đăng xuất
+        </button>
+      </div>
+    </template>
 
     <script>
       (function() {
-        // Cài đặt 2 mật khẩu truy cập
-        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền
-        const PASS_GUEST = "1234"; // Mật khẩu xem cho khách
+        const PASS_ADMIN = "thaybinh123";
+        const PASS_GUEST = "2026";
+
+        // Tự động chèn khung thông tin vào thanh menu chính
+        function injectTeacherCard() {
+          if (document.getElementById('custom-teacher-wrapper')) return;
+
+          // Tìm nút "Cài đặt và sao lưu" trong thanh menu
+          const elements = Array.from(document.querySelectorAll('button, div, a'));
+          const settingBtn = elements.find(el => {
+            const txt = (el.innerText || '').trim();
+            return txt.includes('Cài đặt và sao lưu');
+          });
+
+          if (settingBtn) {
+            // Xác định thẻ cha chứa nút (mục danh mục)
+            let targetNode = settingBtn;
+            while (targetNode.parentElement && 
+                   !targetNode.parentElement.tagName.toLowerCase().match(/^(aside|nav)$/) &&
+                   targetNode.parentElement.querySelectorAll('button').length <= 2) {
+              targetNode = targetNode.parentElement;
+            }
+
+            const tpl = document.getElementById('tpl-teacher-section');
+            if (tpl && targetNode && targetNode.parentNode) {
+              const clone = tpl.content.cloneNode(true);
+              targetNode.parentNode.insertBefore(clone, targetNode.nextSibling);
+
+              // Gắn sự kiện click cho nút Đăng xuất
+              const logoutBtn = document.getElementById('btn-app-logout');
+              if (logoutBtn) {
+                logoutBtn.addEventListener('click', handleLogout);
+              }
+            }
+          }
+        }
 
         function applyRole(role) {
           const overlay = document.getElementById('app-lock-overlay');
-          const logoutBtn = document.getElementById('btn-app-logout');
-
           if (overlay) overlay.style.display = 'none';
-          if (logoutBtn) logoutBtn.style.display = 'flex'; // Hiển thị nút đăng xuất khi đã mở khóa
 
           if (role === 'guest') {
             document.body.classList.add('guest-mode');
-
-            // Ẩn định kỳ các nút thêm/sửa/xóa trên giao diện
             setInterval(() => {
               const buttons = document.querySelectorAll('button');
               buttons.forEach(btn => {
-                if (btn.id === 'btn-app-logout') return; // Không ẩn nút đăng xuất
+                if (btn.id === 'btn-app-logout') return;
                 const text = (btn.innerText || '').toLowerCase();
-                const dangerousKeywords = [
-                  'thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 
-                  'ghi nhận', 'kết nối', 'cài đặt', 'reset', 'đồng bộ'
-                ];
+                const dangerousKeywords = ['thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 'ghi nhận', 'kết nối', 'cài đặt', 'reset', 'đồng bộ'];
                 const isNavMenu = btn.closest('nav') || btn.closest('aside') || btn.className.includes('nav');
                 if (!isNavMenu && dangerousKeywords.some(kw => text.includes(kw))) {
                   btn.style.setProperty('display', 'none', 'important');
@@ -195,26 +255,19 @@
           }
         }
 
-        // Xử lý khi nhấn nút ĐĂNG XUẤT
         function handleLogout() {
-          // Xóa phiên làm việc
           sessionStorage.removeItem('user_access_role');
-          
-          // Khóa lại màn hình
           const overlay = document.getElementById('app-lock-overlay');
-          const logoutBtn = document.getElementById('btn-app-logout');
           const passInput = document.getElementById('lock-pass');
           const err = document.getElementById('lock-err');
 
           document.body.classList.remove('guest-mode');
           if (err) err.style.display = 'none';
           if (passInput) passInput.value = '';
-          if (logoutBtn) logoutBtn.style.display = 'none';
           if (overlay) overlay.style.display = 'flex';
           if (passInput) passInput.focus();
         }
 
-        // Tự động khôi phục nếu đang trong phiên đăng nhập
         const savedRole = sessionStorage.getItem('user_access_role');
         if (savedRole) {
           window.addEventListener('DOMContentLoaded', () => applyRole(savedRole));
@@ -224,7 +277,6 @@
           const passInput = document.getElementById('lock-pass');
           const btn = document.getElementById('lock-btn');
           const err = document.getElementById('lock-err');
-          const logoutBtn = document.getElementById('btn-app-logout');
 
           function checkPass() {
             const val = passInput.value.trim();
@@ -243,7 +295,11 @@
           if (passInput) passInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkPass();
           });
-          if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+          // Quét và chèn khung thông tin vào đúng vị trí menu
+          injectTeacherCard();
+          const observer = new MutationObserver(injectTeacherCard);
+          observer.observe(document.body, { childList: true, subtree: true });
         });
       })();
     </script>
