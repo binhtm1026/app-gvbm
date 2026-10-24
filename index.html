@@ -9,10 +9,9 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-
-    <!-- ================= BỘ THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT (ĐẶT ĐÚNG TRONG MENU) ================= -->
+<!-- ================= BỘ BẢO MẬT, THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT ================= -->
     <style>
-      /* 1. Màn hình khóa bảo vệ */
+      /* 1. Màn hình khóa đăng nhập */
       #app-lock-overlay {
         position: fixed;
         inset: 0;
@@ -81,26 +80,23 @@
         display: none;
       }
 
-      /* 2. Hộp chứa khớp kích thước thanh menu trái */
+      /* 2. Khung thông tin tác giả ôm gọn theo cột menu trái */
       #custom-teacher-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding: 8px 8px 4px 8px;
-        box-sizing: border-box;
-        width: 100%;
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 4px 6px 6px 6px !important;
+        margin: 0 !important;
       }
-
-      /* Khung thẻ thông tin giáo viên (Màu sắc nổi bật, gọn gàng vừa vặn trong cột) */
       #teacher-info-card {
         background: linear-gradient(135deg, #0e3b68, #0369a1);
         border: 1px solid #38bdf8;
         border-radius: 8px;
-        padding: 8px 10px;
-        box-shadow: 0 4px 12px rgba(3, 105, 161, 0.35);
+        padding: 8px;
+        box-shadow: 0 4px 10px rgba(3, 105, 161, 0.35);
         color: #f0f9ff;
         font-size: 11px;
-        line-height: 1.45;
+        line-height: 1.4;
         box-sizing: border-box;
         width: 100%;
       }
@@ -108,11 +104,10 @@
         font-weight: 700;
         font-size: 11.5px;
         color: #fde047;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
         display: flex;
         align-items: center;
         gap: 4px;
-        letter-spacing: 0.3px;
       }
       #teacher-info-card .card-row {
         margin-bottom: 2px;
@@ -122,30 +117,30 @@
         color: #bae6fd;
       }
 
-      /* Nút Đăng xuất màu đỏ nằm liền dưới khung thông tin */
+      /* Nút Đăng xuất màu đỏ nằm ngay dưới */
       #btn-app-logout {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        width: 100%;
-        background: #dc2626;
-        color: #ffffff;
-        border: 1px solid #ef4444;
-        padding: 7px 10px;
-        border-radius: 7px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
-        transition: background 0.15s ease;
-        box-sizing: border-box;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        width: 100% !important;
+        background: #dc2626 !important;
+        color: #ffffff !important;
+        border: 1px solid #ef4444 !important;
+        padding: 7px !important;
+        border-radius: 7px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35) !important;
+        box-sizing: border-box !important;
+        margin-top: 6px !important;
       }
       #btn-app-logout:hover {
-        background: #b91c1c;
+        background: #b91c1c !important;
       }
 
-      /* 3. Chế độ Khách (Chỉ xem) */
+      /* 3. Phân quyền Khách (Chỉ xem) */
       body.guest-mode::after {
         content: "👀 Chế độ xem dành cho khách (Không có quyền chỉnh sửa)";
         position: fixed;
@@ -209,31 +204,29 @@
 
     <script>
       (function() {
-        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền
-        const PASS_GUEST = "khachxem2026"; // Mật khẩu xem cho khách
+        const PASS_ADMIN = "thaybinh123";
+        const PASS_GUEST = "2026";
 
-        // Hàm chèn chính xác vào ngay dưới "Cài đặt và sao lưu" trong thanh bên trái
+        // Tự động chèn ĐÚNG vào phía trên nút "Giao diện & Phối màu"
         function injectTeacherCard() {
           if (document.getElementById('custom-teacher-wrapper')) return;
 
-          // Tìm phần tử "Cài đặt và sao lưu"
-          const allElements = Array.from(document.querySelectorAll('button, a, div'));
-          const settingBtn = allElements.find(el => {
-            const txt = (el.innerText || '').trim();
-            return txt.includes('Cài đặt và sao lưu') && el.children.length > 0;
-          });
+          // 1. Tìm nút "Giao diện & Phối màu" ở góc dưới thanh menu
+          const allButtons = Array.from(document.querySelectorAll('button'));
+          const themeBtn = allButtons.find(b => (b.innerText || '').includes('Giao diện & Phối màu'));
 
-          if (settingBtn) {
-            // Lấy khối chứa của nút "Cài đặt và sao lưu"
-            let target = settingBtn;
-            if (target.parentElement && target.parentElement.children.length === 1) {
-              target = target.parentElement;
+          if (themeBtn) {
+            // Tìm container trực tiếp chứa nút này
+            let parentBox = themeBtn;
+            while (parentBox.parentElement && parentBox.parentElement.querySelectorAll('button').length <= 4) {
+              parentBox = parentBox.parentElement;
             }
 
             const tpl = document.getElementById('tpl-teacher-section');
-            if (tpl && target && target.parentNode) {
+            if (tpl && parentBox && parentBox.parentNode) {
               const clone = tpl.content.cloneNode(true);
-              target.parentNode.insertBefore(clone, target.nextSibling);
+              // Chèn ngay phía trên khối "Giao diện & Phối màu"
+              parentBox.parentNode.insertBefore(clone, parentBox);
 
               const logoutBtn = document.getElementById('btn-app-logout');
               if (logoutBtn) {
@@ -305,7 +298,6 @@
             if (e.key === 'Enter') checkPass();
           });
 
-          // Quét và chèn liên tục khi React render xong giao diện
           injectTeacherCard();
           const observer = new MutationObserver(injectTeacherCard);
           observer.observe(document.body, { childList: true, subtree: true });
@@ -313,6 +305,7 @@
       })();
     </script>
     <!-- ========================================================================================== -->
+    
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
