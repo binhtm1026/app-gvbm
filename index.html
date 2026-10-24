@@ -39,8 +39,9 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: center top; /* Giữ trọng tâm hình ảnh thầy giáo và bảng viết */
         display: block;
-        filter: brightness(0.92) contrast(1.05);
+        filter: brightness(1) contrast(1.02);
       }
       .gallery-overlay-text {
         position: absolute;
@@ -307,9 +308,8 @@
 
     <!-- MÀN HÌNH ĐĂNG NHẬP (ẢNH 3D LỚP HỌC THCS VÀ KHUNG PHẢI) -->
     <div id="app-lock-overlay">
-      <div class="lock-left-gallery">
-        <div class="gallery-single-poster">
-          <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1920&q=85" alt="Lớp học THCS hiện đại" />
+      <div class="gallery-single-poster">
+          <img src="Thaytoan.png" alt="Tiết dạy Toán Thầy Minh Bình" />
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p>Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
