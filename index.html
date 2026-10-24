@@ -9,6 +9,186 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+<!-- ================= BỘ BẢO MẬT VÀ PHÂN QUYỀN KHÁCH XEM ================= -->
+    <style>
+      /* Giao diện màn hình đăng nhập khóa ứng dụng */
+      #app-lock-overlay {
+        position: fixed;
+        inset: 0;
+        background: #0f172a;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #f8fafc;
+      }
+      .lock-box {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 32px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        text-align: center;
+      }
+      .lock-box h2 {
+        margin: 0 0 8px 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #38bdf8;
+      }
+      .lock-box p {
+        margin: 0 0 24px 0;
+        font-size: 14px;
+        color: #94a3b8;
+      }
+      .lock-box input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid #475569;
+        background: #0f172a;
+        color: #f8fafc;
+        font-size: 16px;
+        box-sizing: border-box;
+        margin-bottom: 16px;
+        outline: none;
+      }
+      .lock-box input:focus {
+        border-color: #38bdf8;
+      }
+      .lock-box button {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        background: #2563eb;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .lock-box button:hover {
+        background: #1d4ed8;
+      }
+      .lock-err {
+        color: #f87171;
+        font-size: 13px;
+        margin-top: 12px;
+        display: none;
+      }
+
+      /* Chế độ KHÁCH: Banner thông báo chế độ chỉ xem ở góc màn hình */
+      body.guest-mode::after {
+        content: "👀 Chế độ xem dành cho khách (Không có quyền chỉnh sửa)";
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        background: #b45309;
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 99999;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        pointer-events: none;
+      }
+
+      /* Chế độ KHÁCH: Khóa hoặc ẩn các nút thêm/sửa/xóa và các ô nhập liệu */
+      body.guest-mode input:not(#lock-pass),
+      body.guest-mode textarea,
+      body.guest-mode select {
+        pointer-events: none !important;
+        opacity: 0.8 !important;
+      }
+
+      /* Vô hiệu hóa nút có biểu tượng sửa, xóa, lưu, tạo mới */
+      body.guest-mode button:has(svg.lucide-trash-2),
+      body.guest-mode button:has(svg.lucide-edit),
+      body.guest-mode button:has(svg.lucide-pencil),
+      body.guest-mode button:has(svg.lucide-plus),
+      body.guest-mode button:has(svg.lucide-save) {
+        display: none !important;
+      }
+    </style>
+
+    <div id="app-lock-overlay">
+      <div class="lock-box">
+        <h2>App Thầy Minh Bình</h2>
+        <p>Vui lòng nhập mật khẩu truy cập</p>
+        <input type="password" id="lock-pass" placeholder="Nhập mật khẩu..." autofocus />
+        <button id="lock-btn">Truy cập</button>
+        <div class="lock-err" id="lock-err">Mật khẩu không chính xác!</div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        // --- THẦY CÀI ĐẶT 2 MẬT KHẨU TẠI ĐÂY ---
+        const PASS_ADMIN = "thaybinh123";  // Mật khẩu toàn quyền chỉnh sửa của Thầy
+        const PASS_GUEST = "1234"; // Mật khẩu gửi cho người khác (chỉ được xem)
+
+        function applyRole(role) {
+          const overlay = document.getElementById('app-lock-overlay');
+          if (overlay) overlay.style.display = 'none';
+
+          if (role === 'guest') {
+            document.body.classList.add('guest-mode');
+
+            // Quét định kỳ để vô hiệu hóa mọi nút hành động ghi đè dữ liệu
+            setInterval(() => {
+              const buttons = document.querySelectorAll('button');
+              buttons.forEach(btn => {
+                const text = (btn.innerText || '').toLowerCase();
+                const dangerousKeywords = [
+                  'thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 
+                  'ghi nhận', 'kết nối', 'cài đặt', 'reset', 'đồng bộ'
+                ];
+                // Nếu nút chứa các từ khóa chỉnh sửa nhưng KHÔNG phải nút chuyển tab thanh menu
+                const isNavMenu = btn.closest('nav') || btn.closest('aside') || btn.className.includes('nav');
+                if (!isNavMenu && dangerousKeywords.some(kw => text.includes(kw))) {
+                  btn.style.setProperty('display', 'none', 'important');
+                }
+              });
+            }, 300);
+          }
+        }
+
+        // Kiểm tra xem máy này đã mở khóa trước đó chưa
+        const savedRole = sessionStorage.getItem('user_access_role');
+        if (savedRole) {
+          window.addEventListener('DOMContentLoaded', () => applyRole(savedRole));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+          const passInput = document.getElementById('lock-pass');
+          const btn = document.getElementById('lock-btn');
+          const err = document.getElementById('lock-err');
+
+          function checkPass() {
+            const val = passInput.value.trim();
+            if (val === PASS_ADMIN) {
+              sessionStorage.setItem('user_access_role', 'admin');
+              applyRole('admin');
+            } else if (val === PASS_GUEST) {
+              sessionStorage.setItem('user_access_role', 'guest');
+              applyRole('guest');
+            } else {
+              err.style.display = 'block';
+            }
+          }
+
+          if (btn) btn.addEventListener('click', checkPass);
+          if (passInput) passInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPass();
+          });
+        });
+      })();
+    </script>
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
