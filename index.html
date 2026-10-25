@@ -65,11 +65,58 @@
         text-shadow: 0 2px 8px rgba(0,0,0,0.6);
       }
       .gallery-overlay-text .school-sub {
-        margin: 4px 0 0 0;
-        font-size: 13px;
-        color: #ccfbf1;
-        line-height: 1.5;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        /* TẤM BIỂU NGỮ DỰNG ĐỨNG ĐẶT VỪA VẶN TRONG KHUNG TRẮNG BÊN TRÁI */
+      .vertical-welcome-box {
+        margin-top: 24px;
+        width: 215px; /* Chiều rộng vừa khớp khoảng trống màu trắng */
+        padding: 24px 16px;
+        background: linear-gradient(170deg, rgba(255, 255, 255, 0.75) 0%, rgba(204, 251, 241, 0.65) 100%);
+        border: 2px solid rgba(13, 148, 136, 0.45);
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(4, 47, 46, 0.12), inset 0 0 15px rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .vertical-welcome-box .vw-sparkle {
+        font-size: 15px;
+        color: #0d9488;
+        margin-bottom: 6px;
+        letter-spacing: 2px;
+      }
+      .vertical-welcome-box .vw-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #0f766e;
+        line-height: 1.35;
+        font-family: system-ui, -apple-system, sans-serif;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+      }
+      .vertical-welcome-box .vw-sub {
+        font-size: 12px;
+        font-weight: 800;
+        color: #115e59;
+        letter-spacing: 1.5px;
+        margin: 8px 0 4px 0;
+      }
+      .vertical-welcome-box .vw-teacher {
+        font-size: 21px;
+        font-weight: 900;
+        color: #042f2e;
+        letter-spacing: 0.5px;
+        line-height: 1.25;
+        text-transform: uppercase;
+        border-bottom: 2px dashed #14b8a6;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(20, 184, 166, 0.25);
+      }
+      .vertical-welcome-box .vw-quote {
+        font-size: 11px;
+        font-style: italic;
+        color: #134e4a;
+        line-height: 1.4;
+      }
       }
       .welcome-banner {
         display: inline-block;
@@ -345,8 +392,14 @@
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p class="school-sub">Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
-            <div class="welcome-banner">
-              ✨ Chào mừng các em đến với lớp học của thầy Bình ✨
+            
+            <!-- BẢNG CHÀO MỪNG DẠNG ĐỨNG CHIẾM TRỌN KHUNG ĐỎ BÊN TRÁI -->
+            <div class="vertical-welcome-box">
+              <div class="vw-sparkle">✨ ✦ ✨</div>
+              <div class="vw-title">Chào mừng các em</div>
+              <div class="vw-sub">ĐẾN VỚI LỚP HỌC</div>
+              <div class="vw-teacher">CỦA THẦY BÌNH</div>
+              <div class="vw-quote">"Học Toán tư duy - Vững bước tương lai"</div>
             </div>
           </div>
         </div>
