@@ -9,7 +9,7 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <!-- ================= BỘ BẢO MẬT, MÀN HÌNH ĐĂNG NHẬP XANH DA TRỜI & ẢNH MỚI ================= -->
+ <!-- ================= BỘ BẢO MẬT, MÀN HÌNH ĐĂNG NHẬP PHỐI MÀU XANH NGỌC 3D ================= -->
     <style>
       /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP */
       #app-lock-overlay {
@@ -17,16 +17,17 @@
         inset: 0;
         z-index: 999999;
         display: flex;
-        background: #090d16;
+        background: #042f2e;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: #f8fafc;
         overflow: hidden;
       }
 
-            .lock-left-gallery {
-        flex: 1.4;
+      /* KHU VỰC BÊN TRÁI: ẢNH LỚP HỌC TOÁN 3D */
+      .lock-left-gallery {
+        flex: 1.45;
         position: relative;
-        background: #0b1120;
+        background: #0f172a;
         overflow: hidden;
       }
       .gallery-single-poster {
@@ -38,45 +39,45 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center center;
+        object-position: center right; /* Căn chỉnh để thấy rõ thầy và trò */
         display: block;
-        filter: brightness(1) contrast(1.02);
+        filter: brightness(1.02) contrast(1.03);
       }
       .gallery-overlay-text {
         position: absolute;
         bottom: 0;
         inset-inline: 0;
-        background: linear-gradient(to top, rgba(11, 17, 32, 0.95) 25%, rgba(11, 17, 32, 0) 100%);
-        padding: 32px 28px 20px 28px;
+        background: linear-gradient(to top, rgba(4, 47, 46, 0.95) 20%, rgba(4, 47, 46, 0) 100%);
+        padding: 34px 28px 20px 28px;
         color: #fff;
       }
       .gallery-overlay-text h1 {
         margin: 0;
-        font-size: 22px;
+        font-size: 23px;
         font-weight: 800;
-        color: #38bdf8;
+        color: #5eead4;
         letter-spacing: 0.5px;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
       }
       .gallery-overlay-text p {
         margin: 5px 0 0 0;
         font-size: 13.5px;
-        color: #e2e8f0;
+        color: #ccfbf1;
         line-height: 1.5;
       }
 
-      /* KHU VỰC BÊN PHẢI: NỀN MÀU XANH DA TRỜI TƯƠI SÁNG */
+      /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP PHỐI MÀU XANH NGỌC - MINT GRADIENT */
       .lock-right-panel {
         width: 440px;
         max-width: 100%;
-        background: linear-gradient(165deg, #0284c7 0%, #0369a1 50%, #075985 100%);
-        border-left: 1px solid rgba(255, 255, 255, 0.25);
+        background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%);
+        border-left: 1.5px solid rgba(94, 234, 212, 0.3);
         display: flex;
         flex-direction: column;
         justify-content: center;
         padding: 36px 32px;
         box-sizing: border-box;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.4);
+        box-shadow: -12px 0 35px rgba(0,0,0,0.45);
         z-index: 2;
       }
       .panel-header {
@@ -89,9 +90,9 @@
         border-radius: 9999px;
         font-size: 11px;
         font-weight: 700;
-        background: rgba(255, 255, 255, 0.2);
-        color: #ffffff;
-        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(94, 234, 212, 0.18);
+        color: #99f6e4;
+        border: 1px solid rgba(94, 234, 212, 0.4);
         margin-bottom: 8px;
         letter-spacing: 0.5px;
       }
@@ -100,10 +101,10 @@
         font-size: 24px;
         font-weight: 800;
         color: #ffffff;
-        text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        text-shadow: 0 2px 6px rgba(0,0,0,0.3);
       }
 
-      /* 2 Ô CHỌN QUYỀN TRÊN NỀN XANH */
+      /* 2 Ô CHỌN QUYỀN */
       .role-selector-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -122,25 +123,27 @@
         align-items: center;
         gap: 4px;
       }
+      /* Ô Admin (Xanh ngọc sáng) */
       .role-card.admin-card {
-        background: rgba(15, 23, 42, 0.45);
-        color: #e0f2fe;
+        background: rgba(4, 47, 46, 0.55);
+        color: #ccfbf1;
       }
       .role-card.admin-card.active {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: #38bdf8;
-        color: #0369a1;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        background: #ffffff;
+        border-color: #2dd4bf;
+        color: #0f766e;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
       }
+      /* Ô Khách (Màu cam vàng ấm áp để phân biệt rõ) */
       .role-card.guest-card {
-        background: rgba(15, 23, 42, 0.45);
-        color: #e0f2fe;
+        background: rgba(4, 47, 46, 0.55);
+        color: #ccfbf1;
       }
       .role-card.guest-card.active {
         background: linear-gradient(135deg, #f59e0b, #d97706);
-        border-color: #fef08a;
+        border-color: #fde047;
         color: #ffffff;
-        box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4);
+        box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
       }
       .role-card .role-title {
         font-size: 14px;
@@ -161,20 +164,21 @@
         width: 100%;
         padding: 13px 16px;
         border-radius: 10px;
-        border: 1.5px solid rgba(255, 255, 255, 0.35);
-        background: rgba(15, 23, 42, 0.65);
+        border: 1.5px solid rgba(94, 234, 212, 0.35);
+        background: rgba(4, 47, 46, 0.7);
         color: #ffffff;
         font-size: 15px;
         box-sizing: border-box;
         outline: none;
         backdrop-filter: blur(4px);
+        transition: border-color 0.2s;
       }
       .lock-form input::placeholder {
-        color: #bae6fd;
+        color: #99f6e4;
       }
       .lock-form input:focus {
-        border-color: #ffffff;
-        background: rgba(15, 23, 42, 0.85);
+        border-color: #5eead4;
+        background: rgba(4, 47, 46, 0.9);
       }
       .lock-form button {
         width: 100%;
@@ -184,12 +188,12 @@
         font-size: 15px;
         font-weight: 700;
         cursor: pointer;
-        transition: transform 0.15s;
+        transition: transform 0.15s, opacity 0.2s;
       }
       .lock-form button.btn-admin {
-        background: linear-gradient(135deg, #38bdf8, #0284c7);
+        background: linear-gradient(135deg, #2dd4bf, #0d9488);
         color: #042f2e;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
       }
       .lock-form button.btn-guest {
         background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -198,6 +202,7 @@
       }
       .lock-form button:hover {
         transform: translateY(-1px);
+        opacity: 0.95;
       }
       .lock-err {
         color: #fecaca;
@@ -214,7 +219,7 @@
         .lock-right-panel { width: 100%; height: 100%; justify-content: center; }
       }
 
-      /* 2. NHÃN CHẾ ĐỘ KHÁCH: CỐ ĐỊNH SÁT TRÁI NÚT 2 LỚP • 91 HỌC SINH */
+      /* 2. NHÃN CHẾ ĐỘ KHÁCH: CỐ ĐỊNH TRƯỚC SĨ SỐ */
       body.guest-mode::after {
         display: none !important;
       }
@@ -317,10 +322,10 @@
 
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="app-lock-overlay">
-      <!-- CỘT TRÁI: ẢNH TIẾT DẠY TOÁN MỚI -->
+      <!-- CỘT TRÁI: ẢNH LỚP HỌC 3D MỚI -->
       <div class="lock-left-gallery">
         <div class="gallery-single-poster">
-          <img src="Hinhnen.png" alt="Hình nền Toán học THCS Ngô Quyền" />
+          <img src="Hinhnen.png" alt="Lớp học Toán THCS Ngô Quyền" />
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p>Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
@@ -328,12 +333,12 @@
         </div>
       </div>
 
-      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP XANH DA TRỜI -->
+      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP PHỐI MÀU XANH NGỌC -->
       <div class="lock-right-panel">
         <div class="panel-header">
           <div class="badge">HỆ THỐNG GIÁO DỤC SỐ AI</div>
           <h2>App Thầy Minh Bình</h2>
-          <p style="font-size:13px; color:#e0f2fe; margin:6px 0 0 0;">Vui lòng chọn vai trò truy cập bên dưới</p>
+          <p style="font-size:13px; color:#ccfbf1; margin:6px 0 0 0;">Vui lòng chọn vai trò truy cập bên dưới</p>
         </div>
 
         <div class="role-selector-grid">
@@ -417,7 +422,6 @@
           if (passInput) passInput.focus();
         };
 
-        // Chèn khung thông tin vào menu bên trái (ngay trên Giao diện & Phối màu)
         function injectTeacherCard() {
           if (document.getElementById('custom-teacher-wrapper')) return;
 
@@ -518,7 +522,7 @@
         });
       })();
     </script>
-    <!-- ========================================================================================== -->    
+    <!-- ========================================================================================== -->   
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
