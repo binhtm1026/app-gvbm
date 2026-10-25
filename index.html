@@ -66,17 +66,64 @@
       }
       .gallery-overlay-text .school-sub {
         /* TẤM BIỂU NGỮ DỰNG ĐỨNG ĐẶT VỪA VẶN TRONG KHUNG TRẮNG BÊN TRÁI */
+      /* BẢNG CHÀO MỪNG TO BẢN, CHIẾM TRỌN KHÔNG GIAN DƯỚI */
       .vertical-welcome-box {
-        margin-top: 24px;
-        width: 215px; /* Chiều rộng vừa khớp khoảng trống màu trắng */
-        padding: 24px 16px;
-        background: linear-gradient(170deg, rgba(255, 255, 255, 0.75) 0%, rgba(204, 251, 241, 0.65) 100%);
-        border: 2px solid rgba(13, 148, 136, 0.45);
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(4, 47, 46, 0.12), inset 0 0 15px rgba(255, 255, 255, 0.6);
+        margin-top: 18px;
+        width: 250px; /* Mở rộng chiều ngang vừa vặn khoảng trống */
+        min-height: 280px; /* Kéo dài xuống hết vùng trống phía dưới */
+        padding: 26px 18px;
+        background: linear-gradient(165deg, rgba(255, 255, 255, 0.9) 0%, rgba(204, 251, 241, 0.85) 100%);
+        border: 2.5px solid #0d9488;
+        border-radius: 22px;
+        box-shadow: 0 12px 30px rgba(4, 47, 46, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(8px);
         text-align: center;
         box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+
+      /* 1. DÒNG: CHÀO MỪNG CÁC EM (Chữ to, đậm, rõ nét) */
+      .vertical-welcome-box .vw-title {
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f766e;
+        line-height: 1.3;
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+      }
+
+      /* 2. DÒNG: ĐẾN VỚI LỚP HỌC */
+      .vertical-welcome-box .vw-sub {
+        font-size: 14.5px;
+        font-weight: 800;
+        color: #115e59;
+        letter-spacing: 2px;
+        margin: 6px 0;
+      }
+
+      /* 3. DÒNG: THẦY BÌNH (Rất to, sắc nét, tạo điểm nhấn chính) */
+      .vertical-welcome-box .vw-teacher {
+        font-size: 28px;
+        font-weight: 900;
+        color: #042f2e;
+        letter-spacing: 1px;
+        line-height: 1.2;
+        text-transform: uppercase;
+        border-top: 2px dashed #0d9488;
+        border-bottom: 2px dashed #0d9488;
+        padding: 10px 0;
+        margin: 8px 0;
+        text-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+      }
+
+      /* 4. DÒNG KHẨU HIỆU DƯỚI CÙNG */
+      .vertical-welcome-box .vw-quote {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0d9488;
+        line-height: 1.4;
       }
       .vertical-welcome-box .vw-sparkle {
         font-size: 15px;
@@ -393,15 +440,13 @@
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p class="school-sub">Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
             
-            <!-- BẢNG CHÀO MỪNG DẠNG ĐỨNG CHIẾM TRỌN KHUNG ĐỎ BÊN TRÁI -->
+            <!-- BẢNG CHÀO MỪNG TO RÕ CHIẾM HẾT VÙNG TRỐNG PHÍA DƯỚI -->
             <div class="vertical-welcome-box">
-              <div class="vw-sparkle">✨ ✦ ✨</div>
-              <div class="vw-title">Chào mừng các em</div>
+              <div class="vw-title">CHÀO MỪNG CÁC EM</div>
               <div class="vw-sub">ĐẾN VỚI LỚP HỌC</div>
-              <div class="vw-teacher">CỦA THẦY BÌNH</div>
-              <div class="vw-quote">"Học Toán tư duy - Vững bước tương lai"</div>
+              <div class="vw-teacher">THẦY BÌNH</div>
+              <div class="vw-quote">Học Toán tư duy • Vững bước tương lai</div>
             </div>
-          </div>
         </div>
       </div>
 
