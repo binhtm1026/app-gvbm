@@ -226,15 +226,17 @@
       #guest-badge-fixed {
         display: none;
         position: fixed;
-        top: 13px;
+        top: 16px; /* Hạ xuống 16px để tim chữ nằm chuẩn ngang hàng với ô 2 lớp */
         right: 265px;
+        height: 32px; /* Khớp chiều cao chuẩn của các nút trên thanh header */
+        box-sizing: border-box;
         z-index: 50;
         align-items: center;
         gap: 6px;
         background: linear-gradient(135deg, #9a3412, #c2410c);
         color: #ffffff;
         border: 1px solid #fdba74;
-        padding: 5px 14px;
+        padding: 0 12px; /* Căn giữa nội dung theo chiều dọc */
         border-radius: 9999px;
         font-size: 12px;
         font-weight: 700;
