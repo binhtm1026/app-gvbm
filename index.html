@@ -9,26 +9,31 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
- <!-- ================= BỘ BẢO MẬT, MÀN HÌNH ĐĂNG NHẬP PHỐI MÀU XANH NGỌC 3D ================= -->
+   
+  <!-- ================= BỘ GIAO DIỆN ĐĂNG NHẬP, BẢO MẬT & NHÃN CHUẨN XÁC ================= -->
     <style>
-      /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP */
+      /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP PHỦ TOÀN MÀN HÌNH */
       #app-lock-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 999999;
-        display: flex;
-        background: #042f2e;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: #f8fafc;
-        overflow: hidden;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999999 !important;
+        display: flex !important;
+        background: #042f2e !important;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        color: #f8fafc !important;
+        overflow: hidden !important;
       }
 
-      /* KHU VỰC BÊN TRÁI: ẢNH LỚP HỌC TOÁN 3D */
+      /* CỘT BÊN TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ TRÊN ĐỈNH ẢNH */
       .lock-left-gallery {
         flex: 1.45;
         position: relative;
         background: #0f172a;
         overflow: hidden;
+        height: 100%;
       }
       .gallery-single-poster {
         width: 100%;
@@ -39,7 +44,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center right; /* Căn chỉnh để thấy rõ thầy và trò */
+        object-position: center right;
         display: block;
         filter: brightness(1.02) contrast(1.03);
       }
@@ -47,8 +52,8 @@
         position: absolute;
         top: 0;
         inset-inline: 0;
-        background: linear-gradient(to bottom, rgba(4, 47, 46, 0.92) 0%, rgba(4, 47, 46, 0.5) 65%, rgba(4, 47, 46, 0) 100%);
-        padding: 24px 28px 40px 28px;
+        background: linear-gradient(to bottom, rgba(4, 47, 46, 0.95) 0%, rgba(4, 47, 46, 0.6) 65%, rgba(4, 47, 46, 0) 100%);
+        padding: 24px 28px 36px 28px;
         color: #fff;
       }
       .gallery-overlay-text h1 {
@@ -66,13 +71,11 @@
         line-height: 1.5;
         text-shadow: 0 1px 4px rgba(0,0,0,0.5);
       }
-
-      /* DÒNG CHỮ CHÀO MỪNG NẰM PHÍA DƯỚI RÕ NÉT & ĐẸP MẮT */
       .welcome-banner {
         display: inline-block;
         margin-top: 10px;
         padding: 5px 14px;
-        background: rgba(15, 118, 110, 0.45);
+        background: rgba(15, 118, 110, 0.5);
         border: 1px solid rgba(94, 234, 212, 0.5);
         border-radius: 20px;
         font-size: 13.5px;
@@ -84,10 +87,11 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
       }
 
-      /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP PHỐI MÀU XANH NGỌC - MINT GRADIENT */
+      /* CỘT BÊN PHẢI: KHUNG ĐĂNG NHẬP XANH NGỌC */
       .lock-right-panel {
         width: 440px;
         max-width: 100%;
+        height: 100%;
         background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%);
         border-left: 1.5px solid rgba(94, 234, 212, 0.3);
         display: flex;
@@ -121,8 +125,6 @@
         color: #ffffff;
         text-shadow: 0 2px 6px rgba(0,0,0,0.3);
       }
-
-      /* 2 Ô CHỌN QUYỀN */
       .role-selector-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -141,7 +143,6 @@
         align-items: center;
         gap: 4px;
       }
-      /* Ô Admin (Xanh ngọc sáng) */
       .role-card.admin-card {
         background: rgba(4, 47, 46, 0.55);
         color: #ccfbf1;
@@ -152,7 +153,6 @@
         color: #0f766e;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
       }
-      /* Ô Khách (Màu cam vàng ấm áp để phân biệt rõ) */
       .role-card.guest-card {
         background: rgba(4, 47, 46, 0.55);
         color: #ccfbf1;
@@ -171,8 +171,6 @@
         font-size: 11px;
         opacity: 0.9;
       }
-
-      /* Ô NHẬP LIỆU & NÚT BẤM */
       .lock-form {
         display: flex;
         flex-direction: column;
@@ -189,7 +187,6 @@
         box-sizing: border-box;
         outline: none;
         backdrop-filter: blur(4px);
-        transition: border-color 0.2s;
       }
       .lock-form input::placeholder {
         color: #99f6e4;
@@ -232,21 +229,21 @@
       }
 
       @media (max-width: 868px) {
-        #app-lock-overlay { flex-direction: column; overflow-y: auto; }
-        .lock-left-gallery { display: none; }
-        .lock-right-panel { width: 100%; height: 100%; justify-content: center; }
+        #app-lock-overlay { flex-direction: column !important; overflow-y: auto !important; }
+        .lock-left-gallery { display: none !important; }
+        .lock-right-panel { width: 100% !important; height: 100% !important; justify-content: center !important; }
       }
 
-      /* 2. NHÃN CHẾ ĐỘ KHÁCH: CỐ ĐỊNH TRƯỚC SĨ SỐ */
+      /* 2. NHÃN CHẾ ĐỘ KHÁCH CỐ ĐỊNH THẲNG HÀNG NÚT 2 LỚP TRÊN HEADER */
       body.guest-mode::after {
         display: none !important;
       }
       #guest-badge-fixed {
         display: none;
         position: fixed;
-        top: 16px; /* Hạ xuống 16px để tim chữ nằm chuẩn ngang hàng với ô 2 lớp */
+        top: 16px;
         right: 265px;
-        height: 32px; /* Khớp chiều cao chuẩn của các nút trên thanh header */
+        height: 32px;
         box-sizing: border-box;
         z-index: 50;
         align-items: center;
@@ -254,7 +251,7 @@
         background: linear-gradient(135deg, #9a3412, #c2410c);
         color: #ffffff;
         border: 1px solid #fdba74;
-        padding: 0 12px; /* Căn giữa nội dung theo chiều dọc */
+        padding: 0 12px;
         border-radius: 9999px;
         font-size: 12px;
         font-weight: 700;
@@ -266,7 +263,7 @@
         display: inline-flex !important;
       }
 
-      /* Khóa quyền sửa ở chế độ khách */
+      /* Khóa thao tác khi ở chế độ khách */
       body.guest-mode input:not(#lock-pass),
       body.guest-mode textarea,
       body.guest-mode select {
@@ -281,7 +278,7 @@
         display: none !important;
       }
 
-      /* 3. KHUNG THÔNG TIN TÁC GIẢ & NÚT ĐĂNG XUẤT NẰM GỌN TRONG MENU TRÁI */
+      /* 3. KHUNG THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT TRÊN MENU TRÁI */
       #custom-teacher-wrapper {
         display: flex !important;
         flex-direction: column !important;
@@ -340,9 +337,8 @@
       }
     </style>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <!-- TOÀN BỘ KHUNG ĐĂNG NHẬP (CHIA 2 CỘT HOÀN CHỈNH) -->
     <div id="app-lock-overlay">
-      <!-- CỘT TRÁI: ẢNH LỚP HỌC 3D MỚI -->
       <div class="lock-left-gallery">
         <div class="gallery-single-poster">
           <img src="Hinhnen.png" alt="Lớp học Toán THCS Ngô Quyền" />
@@ -353,9 +349,9 @@
               ✨ Chào mừng các em đến với lớp học của thầy Bình ✨
             </div>
           </div>
+        </div>
       </div>
 
-      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP PHỐI MÀU XANH NGỌC -->
       <div class="lock-right-panel">
         <div class="panel-header">
           <div class="badge">HỆ THỐNG GIÁO DỤC SỐ AI</div>
@@ -384,13 +380,13 @@
       </div>
     </div>
 
-    <!-- NHÃN KHÁCH: CỐ ĐỊNH TRƯỚC SĨ SỐ -->
+    <!-- NHÃN CHẾ ĐỘ KHÁCH -->
     <div id="guest-badge-fixed">
       <span>👀</span>
       <span>Chế độ xem dành cho khách</span>
     </div>
 
-    <!-- MẪU THÔNG TIN TÁC GIẢ & NÚT ĐĂNG XUẤT -->
+    <!-- MẪU THÔNG TIN TÁC GIẢ & ĐĂNG XUẤT TRÊN MENU -->
     <template id="tpl-teacher-section">
       <div id="custom-teacher-wrapper">
         <div id="teacher-info-card">
@@ -412,8 +408,8 @@
 
     <script>
       (function() {
-        const PASS_ADMIN = "thaybinh123";
-        const PASS_GUEST = "2026";
+        const PASS_ADMIN = "thaybinh123";  // Mật khẩu Admin[cite: 3]
+        const PASS_GUEST = "khachxem2026"; // Mật khẩu Khách xem[cite: 3]
 
         let currentRole = 'admin';
 
@@ -471,7 +467,7 @@
 
         function applyRole(role) {
           const overlay = document.getElementById('app-lock-overlay');
-          if (overlay) overlay.style.display = 'none';
+          if (overlay) overlay.style.setProperty('display', 'none', 'important');
 
           if (role === 'guest') {
             document.body.classList.add('guest-mode');
@@ -500,7 +496,7 @@
           document.body.classList.remove('guest-mode');
           if (err) err.style.display = 'none';
           if (passInput) passInput.value = '';
-          if (overlay) overlay.style.display = 'flex';
+          if (overlay) overlay.style.setProperty('display', 'flex', 'important');
           switchRole('admin');
         }
 
@@ -544,7 +540,7 @@
         });
       })();
     </script>
-    <!-- ========================================================================================== -->   
+    <!-- ========================================================================================== -->
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
