@@ -75,56 +75,52 @@
         text-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
       }
 
-      /* BẢNG CHÀO MỪNG TO BẢN CHIẾM TRỌN KHÔNG GIAN BÊN TRÁI */
-      .vertical-welcome-box {
-        margin-top: 18px !important;
-        width: 255px !important;
-        min-height: 275px !important;
-        padding: 24px 18px !important;
-        background: linear-gradient(165deg, rgba(255, 255, 255, 0.92) 0%, rgba(204, 251, 241, 0.88) 100%) !important;
-        border: 2.5px solid #0d9488 !important;
-        border-radius: 22px !important;
-        box-shadow: 0 12px 30px rgba(4, 47, 46, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.8) !important;
-        backdrop-filter: blur(8px) !important;
-        text-align: center !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-around !important;
+      /* CỤM CHỮ CHÀO MỪNG TO RÕ, NỔI BẬT KHÔNG DÙNG KHUNG */
+      .custom-math-welcome {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
-      .vertical-welcome-box .vw-title {
-        font-size: 19px !important;
-        font-weight: 800 !important;
-        color: #0f766e !important;
-        line-height: 1.3 !important;
-        letter-spacing: 0.5px !important;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+      .custom-math-welcome .mw-line1 {
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f766e;
+        letter-spacing: 1px;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 0 12px rgba(255, 255, 255, 0.8);
       }
-      .vertical-welcome-box .vw-sub {
-        font-size: 14px !important;
-        font-weight: 800 !important;
-        color: #115e59 !important;
-        letter-spacing: 2px !important;
-        margin: 6px 0 !important;
+      .custom-math-welcome .mw-line2 {
+        font-size: 28px;
+        font-weight: 900;
+        color: #042f2e;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        line-height: 1.25;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.95), 0 0 16px rgba(94, 234, 212, 0.9);
       }
-      .vertical-welcome-box .vw-teacher {
-        font-size: 28px !important;
-        font-weight: 900 !important;
-        color: #042f2e !important;
-        letter-spacing: 1px !important;
-        line-height: 1.2 !important;
-        text-transform: uppercase !important;
-        border-top: 2px dashed #0d9488 !important;
-        border-bottom: 2px dashed #0d9488 !important;
-        padding: 10px 0 !important;
-        margin: 8px 0 !important;
-        text-shadow: 0 2px 4px rgba(13, 148, 136, 0.25) !important;
+
+      /* KHẨU HIỆU DƯỚI CÙNG GÓC TRÁI HÌNH NỀN */
+      .bottom-left-quote {
+        position: absolute;
+        bottom: 24px;
+        left: 28px;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(4, 47, 46, 0.75);
+        border: 1px solid rgba(94, 234, 212, 0.45);
+        border-radius: 9999px;
+        color: #fef08a;
+        font-size: 13.5px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
       }
-      .vertical-welcome-box .vw-quote {
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        color: #0d9488 !important;
-        line-height: 1.4 !important;
+      .bottom-left-quote .quote-icon {
+        font-size: 16px;
       }
 
       /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP XANH NGỌC */
@@ -387,16 +383,23 @@
       <div class="lock-left-gallery">
         <div class="gallery-single-poster">
           <img src="Hinhnen.png" alt="Lớp học Toán THCS Ngô Quyền" />
+          <!-- PHẦN CHỮ TRÊN CÙNG BÊN TRÁI -->
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p class="school-sub">Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
             
-            <div class="vertical-welcome-box">
-              <div class="vw-title">CHÀO MỪNG CÁC EM</div>
-              <div class="vw-sub">ĐẾN VỚI LỚP HỌC</div>
-              <div class="vw-teacher">THẦY BÌNH</div>
-              <div class="vw-quote">Học Toán tư duy • Vững bước tương lai</div>
+            <!-- CỤM CHỮ TO TỰ DO KHÔNG CẦN KHUNG -->
+            <div class="custom-math-welcome">
+              <span class="mw-line1">CHÀO MỪNG CÁC EM</span>
+              <span class="mw-line2">ĐẾN VỚI LỚP HỌC TOÁN</span>
             </div>
+          </div>
+
+          <!-- CỤM TỪ HỌC TOÁN TƯ DUY NẰM GÓC DƯỚI BÊN TRÁI -->
+          <div class="bottom-left-quote">
+            <span class="quote-icon">💡</span>
+            <span>Học Toán tư duy • Vững bước tương lai</span>
+          </div>
           </div>
         </div>
       </div>
