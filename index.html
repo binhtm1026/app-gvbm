@@ -9,9 +9,10 @@
     <meta property="og:description" content="App GVBM – Trợ lý phân tích và nhận xét quá trình học tập bằng AI dành cho giáo viên. Quản lý lớp học, điểm số, thống kê tiến độ và tạo nhận xét cá nhân hóa." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-       <!-- ================= TOÀN BỘ MÃ GIAO DIỆN ĐĂNG NHẬP, BẢNG CHỮ TO & BẢO MẬT ================= -->
+
+    <!-- ================= TOÀN BỘ BẢO MẬT & MÀN HÌNH ĐĂNG NHẬP 2 CỘT HOÀN CHỈNH ================= -->
     <style>
-      /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP PHỦ KÍN TOÀN BỘ TRANG WEB */
+      /* 1. MÀN HÌNH KHÓA ĐĂNG NHẬP */
       #app-lock-overlay {
         position: fixed !important;
         top: 0 !important;
@@ -28,7 +29,7 @@
         padding: 0 !important;
       }
 
-      /* KHU VỰC BÊN TRÁI: ẢNH LỚP HỌC 3D VÀ BẢNG CHỮ CHÀO MỪNG */
+      /* KHU VỰC BÊN TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ NGHỆ THUẬT */
       .lock-left-gallery {
         flex: 1.45 !important;
         height: 100% !important;
@@ -75,54 +76,52 @@
         text-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
       }
 
-      /* CỤM CHỮ CHÀO MỪNG TO RÕ, NỔI BẬT KHÔNG DÙNG KHUNG */
+      /* CỤM CHỮ TO TỰ DO KHÔNG CẦN KHUNG */
       .custom-math-welcome {
-        margin-top: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        margin-top: 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
       }
       .custom-math-welcome .mw-line1 {
-        font-size: 22px;
-        font-weight: 800;
-        color: #0f766e;
-        letter-spacing: 1px;
-        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 0 12px rgba(255, 255, 255, 0.8);
+        font-size: 22px !important;
+        font-weight: 800 !important;
+        color: #0f766e !important;
+        letter-spacing: 1px !important;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 14px rgba(255, 255, 255, 0.85) !important;
       }
       .custom-math-welcome .mw-line2 {
-        font-size: 28px;
-        font-weight: 900;
-        color: #042f2e;
-        letter-spacing: 0.8px;
-        text-transform: uppercase;
-        line-height: 1.25;
-        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.95), 0 0 16px rgba(94, 234, 212, 0.9);
+        font-size: 28px !important;
+        font-weight: 900 !important;
+        color: #042f2e !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        line-height: 1.25 !important;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.95), 0 0 16px rgba(94, 234, 212, 0.95) !important;
       }
 
-      /* KHẨU HIỆU DƯỚI CÙNG GÓC TRÁI HÌNH NỀN */
+      /* KHẨU HIỆU DƯỚI CÙNG GÓC TRÁI */
       .bottom-left-quote {
-        position: absolute;
-        bottom: 24px;
-        left: 28px;
-        z-index: 10;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: rgba(4, 47, 46, 0.75);
-        border: 1px solid rgba(94, 234, 212, 0.45);
-        border-radius: 9999px;
-        color: #fef08a;
-        font-size: 13.5px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+        position: absolute !important;
+        bottom: 24px !important;
+        left: 28px !important;
+        z-index: 10 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 8px 18px !important;
+        background: rgba(4, 47, 46, 0.75) !important;
+        border: 1px solid rgba(94, 234, 212, 0.45) !important;
+        border-radius: 9999px !important;
+        color: #fef08a !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        backdrop-filter: blur(8px) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
       }
-      .bottom-left-quote .quote-icon {
-        font-size: 16px;
-      }
-      /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP XANH NGỌC */
+
+      /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP 2 Ô */
       .lock-right-panel {
         width: 440px !important;
         max-width: 100% !important;
@@ -273,7 +272,7 @@
         .lock-right-panel { width: 100% !important; height: 100% !important; justify-content: center !important; }
       }
 
-      /* 2. NHÃN CHẾ ĐỘ KHÁCH NẰM CHUẨN THẲNG HÀNG TRÊN HEADER */
+      /* 2. NHÃN CHẾ ĐỘ KHÁCH CỐ ĐỊNH THẲNG HÀNG TRÊN HEADER */
       body.guest-mode::after {
         display: none !important;
       }
@@ -302,7 +301,6 @@
         display: inline-flex !important;
       }
 
-      /* Khóa thao tác khi ở chế độ khách */
       body.guest-mode input:not(#lock-pass),
       body.guest-mode textarea,
       body.guest-mode select {
@@ -376,34 +374,31 @@
       }
     </style>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT CHUẨN XÁC VỀ THẺ HTML -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
     <div id="app-lock-overlay">
-      <!-- CỘT TRÁI: ẢNH LỚP HỌC & BẢNG CHÀO MỪNG TO RÕ -->
+      <!-- CỘT TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ NGHỆ THUẬT -->
       <div class="lock-left-gallery">
         <div class="gallery-single-poster">
           <img src="Hinhnen.png" alt="Lớp học Toán THCS Ngô Quyền" />
-          <!-- PHẦN CHỮ TRÊN CÙNG BÊN TRÁI -->
+          
           <div class="gallery-overlay-text">
             <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
             <p class="school-sub">Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
             
-            <!-- CỤM CHỮ TO TỰ DO KHÔNG CẦN KHUNG -->
             <div class="custom-math-welcome">
               <span class="mw-line1">CHÀO MỪNG CÁC EM</span>
               <span class="mw-line2">ĐẾN VỚI LỚP HỌC TOÁN</span>
             </div>
           </div>
 
-          <!-- CỤM TỪ HỌC TOÁN TƯ DUY NẰM GÓC DƯỚI BÊN TRÁI -->
           <div class="bottom-left-quote">
-            <span class="quote-icon">💡</span>
+            <span>💡</span>
             <span>Học Toán tư duy • Vững bước tương lai</span>
-          </div>
           </div>
         </div>
       </div>
 
-      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô -->
+      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô (ADMIN & KHÁCH) -->
       <div class="lock-right-panel">
         <div class="panel-header">
           <div class="badge">HỆ THỐNG GIÁO DỤC SỐ AI</div>
@@ -461,7 +456,7 @@
     <script>
       (function() {
         const PASS_ADMIN = "thaybinh123";  // Mật khẩu Admin[cite: 3]
-        const PASS_GUEST = "2026"; // Mật khẩu Khách[cite: 3]
+        const PASS_GUEST = "khachxem2026"; // Mật khẩu Khách xem[cite: 3]
 
         let currentRole = 'admin';
 
@@ -593,7 +588,6 @@
       })();
     </script>
     <!-- ========================================================================================== -->
-
     <script type="module">
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
