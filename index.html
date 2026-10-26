@@ -608,7 +608,7 @@
             messagingSenderId: "570373381434",
             appId: "1:570373381434:web:3400e16e69642b286c4403"
           };
-          const jsonStr = JSON.stringify(myConfig);
+          const configStr = JSON.stringify(MY_FIREBASE_CONFIG);
 
           // Ghi vào tất cả các khóa lưu trữ cấu hình có thể có của app
           const configKeys = [
@@ -619,7 +619,11 @@
             'thay_binh_ai_firebase_config',
             'gvbm_firebase_config'
           ];
-          configKeys.forEach(k => localStorage.setItem(k, jsonStr));
+// Tự động ghi vào localStorage nếu máy mới chưa có
+          keys.forEach(k => {
+          if (!localStorage.getItem(k) || localStorage.getItem(k) === 'null' || localStorage.getItem(k) === '{}') {
+            localStorage.setItem(k, configStr);
+          };
 
           // Tự động điền email của thầy để tiện đăng nhập
           localStorage.setItem('firebase_saved_email', 'binhtm.1026@gmail.com');
