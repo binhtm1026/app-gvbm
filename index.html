@@ -614,68 +614,58 @@
 
         const configStr = JSON.stringify(MY_FIREBASE_CONFIG);
 
-        // 2. GÁN VÀO CÁC BIẾN TOÀN CỤC CỦA TRÌNH DUYỆT (WINDOW)
-        window.__FIREBASE_CONFIG__ = MY_FIREBASE_CONFIG;
-        window.firebaseConfig = MY_FIREBASE_CONFIG;
-        window.FIREBASE_CONFIG = MY_FIREBASE_CONFIG;
-        window.DEFAULT_FIREBASE_CONFIG = MY_FIREBASE_CONFIG;
-
-        // 3. GHI ĐÈ VÀO TẤT CẢ CÁC TÊN KHÓA TRONG LOCALSTORAGE
-        const commonKeys = [
-          'firebaseConfig',
-          'firebase_config',
-          'FIREBASE_CONFIG',
-          'app_firebase_config',
-          'firebase_options',
-          'gvbm_firebase_config',
-          'teacher_app_firebase'
+        // 2. NẠP VÀO TOÀN BỘ KHÓA LOCALSTORAGE CÓ THỂ CÓ
+        const keys = [
+          'firebaseConfig', 'firebase_config', 'FIREBASE_CONFIG',
+          'app_firebase_config', 'firebase_options', 'gvbm_firebase_config',
+          'teacher_app_firebase', 'firebase:config', 'persist:root'
         ];
-
-        commonKeys.forEach(key => {
+        keys.forEach(k => {
           try {
-            if (!localStorage.getItem(key) || localStorage.getItem(key) === 'null' || localStorage.getItem(key) === '{}') {
-              localStorage.setItem(key, configStr);
-            }
-          } catch (e) {}
+            localStorage.setItem(k, configStr);
+          } catch(e) {}
         });
 
-        // 4. CƠ CHẾ TỰ ĐỘNG ĐIỀN VÀ XÁC NHẬN NẾU HỘP THOẠI POPUP XUẤT HIỆN
-        function autoFillFirebaseModal() {
-          // Tìm ô textarea hoặc input dùng để dán mã cấu hình
-          const inputs = Array.from(document.querySelectorAll('textarea, input[type="text"]'));
-          const configInput = inputs.find(el => {
-            const placeholder = (el.placeholder || '').toLowerCase();
+        // 3. GÁN BIẾN TOÀN CỤC TRƯỚC KHI REACT/VUE KHỞI TẠO
+        window.__FIREBASE_CONFIG__ = MY_FIREBASE_CONFIG;
+        window.firebaseConfig = MY_FIREBASE_CONFIG;
+
+        // 4. NẾU ỨNG DỤNG BẬT BẢNG POPUP YÊU CẦU NẠP -> TỰ ĐỘNG DÁN VÀ BẤM NÚT LƯU
+        function handlePopupAutoSubmit() {
+          // Tìm ô nhập text / textarea của popup
+          const textAreas = Array.from(document.querySelectorAll('textarea, input[type="text"]'));
+          const targetInput = textAreas.find(el => {
+            const holder = (el.placeholder || '').toLowerCase();
             const id = (el.id || '').toLowerCase();
             const name = (el.name || '').toLowerCase();
-            return placeholder.includes('firebase') || placeholder.includes('apikey') || 
-                   id.includes('firebase') || name.includes('firebase');
+            return holder.includes('firebase') || holder.includes('apikey') || 
+                   id.includes('firebase') || name.includes('firebase') ||
+                   holder.includes('dán') || holder.includes('cấu hình');
           });
 
-          if (configInput && (!configInput.value || configInput.value.trim() === '')) {
-            configInput.value = configStr;
-            // Kích hoạt sự kiện để React/Vue nhận diện việc điền dữ liệu
-            configInput.dispatchEvent(new Event('input', { bubbles: true }));
-            configInput.dispatchEvent(new Event('change', { bubbles: true }));
+          if (targetInput && targetInput.offsetParent !== null) { // Nếu popup đang hiển thị
+            targetInput.value = configStr;
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+            targetInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-            // Tìm nút Xác nhận / Kết nối / Lưu / Đồng bộ
+            // Tự bấm nút Lưu / Đồng bộ / Xác nhận
             setTimeout(() => {
-              const buttons = Array.from(document.querySelectorAll('button'));
-              const confirmBtn = buttons.find(b => {
-                const text = (b.innerText || '').toLowerCase();
-                return text.includes('kết nối') || text.includes('lưu') || 
-                       text.includes('xác nhận') || text.includes('áp dụng') || text.includes('connect');
+              const allBtns = Array.from(document.querySelectorAll('button'));
+              const submitBtn = allBtns.find(b => {
+                const txt = (b.innerText || '').toLowerCase();
+                return (txt.includes('lưu') || txt.includes('kết nối') || txt.includes('xác nhận') || txt.includes('áp dụng')) 
+                       && b.id !== 'lock-btn' && b.id !== 'btn-app-logout';
               });
-
-              if (confirmBtn) {
-                confirmBtn.click();
+              if (submitBtn) {
+                submitBtn.click();
               }
-            }, 200);
+            }, 300);
           }
         }
 
-        // Theo dõi liên tục trong 5 giây đầu khi tải trang
-        const checkTimer = setInterval(autoFillFirebaseModal, 300);
-        setTimeout(() => clearInterval(checkTimer), 6000);
+        // Lắng nghe và xử lý tự động trong 6 giây đầu khi mở trang trên máy mới
+        const checkInterval = setInterval(handlePopupAutoSubmit, 400);
+        setTimeout(() => clearInterval(checkInterval), 6000);
       })();
     </script>
 <script>
