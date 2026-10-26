@@ -598,38 +598,84 @@
   }
 </style>
 <script>
-      (function injectMyFirebaseConfig() {
-        try {
-          const myConfig = {
-            apiKey: "AIzaSyDtBGdTinUOZfil4w1x0RvscunoEQrSjb8",
-            authDomain: "app-gvbm-thaybinhtoan.firebaseapp.com",
-            projectId: "app-gvbm-thaybinhtoan",
-            storageBucket: "app-gvbm-thaybinhtoan.firebasestorage.app",
-            messagingSenderId: "570373381434",
-            appId: "1:570373381434:web:3400e16e69642b286c4403"
-          };
-          const configStr = JSON.stringify(MY_FIREBASE_CONFIG);
+     <!-- ================= BỘ TỰ ĐỘNG NẠP FIREBASE TOÀN DIỆN CHO MỌI MÁY ================= -->
+    <script>
+      (function() {
+        // 1. CẤU HÌNH FIREBASE CỦA THẦY BÌNH
+        // (Thầy kiểm tra và điền đúng thông số dự án của thầy vào đây)
+        const MY_FIREBASE_CONFIG = {
+          apiKey: "AIzaSyDtBGdTinUOZfil4w1x0RvscunoEQrSjb8", 
+          authDomain: "app-gvbm-thaybinhtoan.firebaseapp.com",
+          projectId: "app-gvbm-thaybinhtoan",
+          storageBucket: "app-gvbm-thaybinhtoan.firebasestorage.app",
+          messagingSenderId: "570373381434",
+          appId: "1:570373381434:web:3400e16e69642b286c4403"
+        };
 
-          // Ghi vào tất cả các khóa lưu trữ cấu hình có thể có của app
-          const configKeys = [
-            'firebase_config',
-            'custom_firebase_config',
-            'firebaseConfig',
-            'co_thuy_ai_firebase_config',
-            'thay_binh_ai_firebase_config',
-            'gvbm_firebase_config'
-          ];
-// Tự động ghi vào localStorage nếu máy mới chưa có
-          keys.forEach(k => {
-          if (!localStorage.getItem(k) || localStorage.getItem(k) === 'null' || localStorage.getItem(k) === '{}') {
-            localStorage.setItem(k, configStr);
-          };
+        const configStr = JSON.stringify(MY_FIREBASE_CONFIG);
 
-          // Tự động điền email của thầy để tiện đăng nhập
-          localStorage.setItem('firebase_saved_email', 'binhtm.1026@gmail.com');
-        } catch (e) {
-          console.warn("Lỗi auto nạp Firebase config:", e);
+        // 2. GÁN VÀO CÁC BIẾN TOÀN CỤC CỦA TRÌNH DUYỆT (WINDOW)
+        window.__FIREBASE_CONFIG__ = MY_FIREBASE_CONFIG;
+        window.firebaseConfig = MY_FIREBASE_CONFIG;
+        window.FIREBASE_CONFIG = MY_FIREBASE_CONFIG;
+        window.DEFAULT_FIREBASE_CONFIG = MY_FIREBASE_CONFIG;
+
+        // 3. GHI ĐÈ VÀO TẤT CẢ CÁC TÊN KHÓA TRONG LOCALSTORAGE
+        const commonKeys = [
+          'firebaseConfig',
+          'firebase_config',
+          'FIREBASE_CONFIG',
+          'app_firebase_config',
+          'firebase_options',
+          'gvbm_firebase_config',
+          'teacher_app_firebase'
+        ];
+
+        commonKeys.forEach(key => {
+          try {
+            if (!localStorage.getItem(key) || localStorage.getItem(key) === 'null' || localStorage.getItem(key) === '{}') {
+              localStorage.setItem(key, configStr);
+            }
+          } catch (e) {}
+        });
+
+        // 4. CƠ CHẾ TỰ ĐỘNG ĐIỀN VÀ XÁC NHẬN NẾU HỘP THOẠI POPUP XUẤT HIỆN
+        function autoFillFirebaseModal() {
+          // Tìm ô textarea hoặc input dùng để dán mã cấu hình
+          const inputs = Array.from(document.querySelectorAll('textarea, input[type="text"]'));
+          const configInput = inputs.find(el => {
+            const placeholder = (el.placeholder || '').toLowerCase();
+            const id = (el.id || '').toLowerCase();
+            const name = (el.name || '').toLowerCase();
+            return placeholder.includes('firebase') || placeholder.includes('apikey') || 
+                   id.includes('firebase') || name.includes('firebase');
+          });
+
+          if (configInput && (!configInput.value || configInput.value.trim() === '')) {
+            configInput.value = configStr;
+            // Kích hoạt sự kiện để React/Vue nhận diện việc điền dữ liệu
+            configInput.dispatchEvent(new Event('input', { bubbles: true }));
+            configInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+            // Tìm nút Xác nhận / Kết nối / Lưu / Đồng bộ
+            setTimeout(() => {
+              const buttons = Array.from(document.querySelectorAll('button'));
+              const confirmBtn = buttons.find(b => {
+                const text = (b.innerText || '').toLowerCase();
+                return text.includes('kết nối') || text.includes('lưu') || 
+                       text.includes('xác nhận') || text.includes('áp dụng') || text.includes('connect');
+              });
+
+              if (confirmBtn) {
+                confirmBtn.click();
+              }
+            }, 200);
+          }
         }
+
+        // Theo dõi liên tục trong 5 giây đầu khi tải trang
+        const checkTimer = setInterval(autoFillFirebaseModal, 300);
+        setTimeout(() => clearInterval(checkTimer), 6000);
       })();
     </script>
 <script>
