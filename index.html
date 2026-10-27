@@ -598,74 +598,49 @@
   }
 </style>
 <script>
-     <!-- ================= BỘ TỰ ĐỘNG NẠP FIREBASE TOÀN DIỆN CHO MỌI MÁY ================= -->
+     <!-- TỰ ĐỘNG NẠP CẤU HÌNH VÀO FORM FIREBASE CHO MÁY MỚI -->
     <script>
       (function() {
-        // 1. CẤU HÌNH FIREBASE CỦA THẦY BÌNH
-        // (Thầy kiểm tra và điền đúng thông số dự án của thầy vào đây)
-        const MY_FIREBASE_CONFIG = {
+        const FIREBASE_JSON = JSON.stringify({
           apiKey: "AIzaSyDtBGdTinUOZfil4w1x0RvscunoEQrSjb8", 
           authDomain: "app-gvbm-thaybinhtoan.firebaseapp.com",
           projectId: "app-gvbm-thaybinhtoan",
           storageBucket: "app-gvbm-thaybinhtoan.firebasestorage.app",
           messagingSenderId: "570373381434",
           appId: "1:570373381434:web:3400e16e69642b286c4403"
-        };
-
-        const configStr = JSON.stringify(MY_FIREBASE_CONFIG);
-
-        // 2. NẠP VÀO TOÀN BỘ KHÓA LOCALSTORAGE CÓ THỂ CÓ
-        const keys = [
-          'firebaseConfig', 'firebase_config', 'FIREBASE_CONFIG',
-          'app_firebase_config', 'firebase_options', 'gvbm_firebase_config',
-          'teacher_app_firebase', 'firebase:config', 'persist:root'
-        ];
-        keys.forEach(k => {
-          try {
-            localStorage.setItem(k, configStr);
-          } catch(e) {}
         });
 
-        // 3. GÁN BIẾN TOÀN CỤC TRƯỚC KHI REACT/VUE KHỞI TẠO
-        window.__FIREBASE_CONFIG__ = MY_FIREBASE_CONFIG;
-        window.firebaseConfig = MY_FIREBASE_CONFIG;
-
-        // 4. NẾU ỨNG DỤNG BẬT BẢNG POPUP YÊU CẦU NẠP -> TỰ ĐỘNG DÁN VÀ BẤM NÚT LƯU
-        function handlePopupAutoSubmit() {
-          // Tìm ô nhập text / textarea của popup
-          const textAreas = Array.from(document.querySelectorAll('textarea, input[type="text"]'));
-          const targetInput = textAreas.find(el => {
-            const holder = (el.placeholder || '').toLowerCase();
-            const id = (el.id || '').toLowerCase();
-            const name = (el.name || '').toLowerCase();
-            return holder.includes('firebase') || holder.includes('apikey') || 
-                   id.includes('firebase') || name.includes('firebase') ||
-                   holder.includes('dán') || holder.includes('cấu hình');
-          });
-
-          if (targetInput && targetInput.offsetParent !== null) { // Nếu popup đang hiển thị
-            targetInput.value = configStr;
-            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
-            targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-            // Tự bấm nút Lưu / Đồng bộ / Xác nhận
-            setTimeout(() => {
-              const allBtns = Array.from(document.querySelectorAll('button'));
-              const submitBtn = allBtns.find(b => {
-                const txt = (b.innerText || '').toLowerCase();
-                return (txt.includes('lưu') || txt.includes('kết nối') || txt.includes('xác nhận') || txt.includes('áp dụng')) 
-                       && b.id !== 'lock-btn' && b.id !== 'btn-app-logout';
-              });
-              if (submitBtn) {
-                submitBtn.click();
-              }
-            }, 300);
+        // 1. Tự động lưu vào các khóa LocalStorage hệ thống hay dùng
+        ['firebaseConfig', 'firebase_config', 'gvbm_firebase_config', 'FIREBASE_CONFIG'].forEach(k => {
+          if (!localStorage.getItem(k)) {
+            localStorage.setItem(k, FIREBASE_JSON);
           }
+        });
+
+       // 2. Tự động điền vào khung "Dán cấu hình project Firebase" nếu vào trang Cài đặt
+        function autoFillSettings() {
+          const textareas = document.querySelectorAll('textarea');
+          textareas.forEach(t => {
+            const ph = (t.placeholder || '').toLowerCase();
+            if (ph.includes('firebaseconfig') || ph.includes('apikey') || ph.includes('project_id')) {
+              if (!t.value || t.value.trim() === '') {
+                t.value = FIREBASE_JSON;
+                t.dispatchEvent(new Event('input', { bubbles: true }));
+                t.dispatchEvent(new Event('change', { bubbles: true }));
+
+                // Tìm nút Lưu cấu hình ngay bên dưới và bấm tự động
+                setTimeout(() => {
+                  const buttons = Array.from(document.querySelectorAll('button'));
+                  const saveBtn = buttons.find(b => (b.innerText || '').trim() === 'Lưu cấu hình');
+                  if (saveBtn) saveBtn.click();
+                }, 300);
+              }
+            }
+          });
         }
 
-        // Lắng nghe và xử lý tự động trong 6 giây đầu khi mở trang trên máy mới
-        const checkInterval = setInterval(handlePopupAutoSubmit, 400);
-        setTimeout(() => clearInterval(checkInterval), 6000);
+        const timer = setInterval(autoFillSettings, 500);
+        setTimeout(() => clearInterval(timer), 8000);
       })();
     </script>
 <script>
