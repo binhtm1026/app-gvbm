@@ -543,12 +543,15 @@
           }
         }
 // =========================================================================
-      // CẤU HÌNH GỘP APP "LUYỆN TẬP VÀ KIỂM TRA" VÀO HỆ THỐNG
+   // =========================================================================
+      // CẤU HÌNH GỘP APP "LUYỆN TẬP VÀ KIỂM TRA" AN TOÀN (KHÔNG GÂY LỖI TRẮNG TRANG)
       // =========================================================================
-      const URL_APP_LUYEN_TAP = "https://toanthaybinh-sandy.vercel.app/"; // <-- Thầy thay link web vào đây
+      const URL_APP_LUYEN_TAP = "https://toanthaybinh-sandy.vercel.app"; // <-- Đường dẫn web của thầy
 
       function handleCustomExamTab() {
         const allButtons = Array.from(document.querySelectorAll('button, a'));
+        
+        // 1. Quét tìm nút Ngân hàng đề thi / Luyện tập và kiểm tra
         const examBtn = allButtons.find(b => {
           const txt = (b.innerText || '').trim();
           return txt.includes('Ngân hàng đề thi') || txt.includes('Luyện tập và kiểm tra');
@@ -557,6 +560,7 @@
         if (examBtn && !examBtn.dataset.mergedLms) {
           examBtn.dataset.mergedLms = "true";
 
+          // Đổi tên nút trên menu thành "Luyện tập và kiểm tra"
           const textNodes = Array.from(examBtn.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
           if (textNodes.length > 0) {
             textNodes[textNodes.length - 1].textContent = " Luyện tập và kiểm tra";
@@ -564,43 +568,60 @@
             examBtn.innerHTML = examBtn.innerHTML.replace(/Ngân hàng đề thi/g, 'Luyện tập và kiểm tra');
           }
 
+          // Khi bấm vào tab Luyện tập và kiểm tra -> HIỆN KHUNG IFRAME
           examBtn.addEventListener('click', () => {
             setTimeout(() => {
-              const headerTitle = document.querySelector('header h1') || document.querySelector('header .text-lg');
-              if (headerTitle && (headerTitle.innerText || '').includes('Ngân hàng đề thi')) {
-                headerTitle.innerText = "Luyện tập và kiểm tra";
-              }
-
+              let iframeBox = document.getElementById('custom-exam-iframe-container');
               const mainArea = document.querySelector('main') || document.querySelector('.flex-1.overflow-y-auto');
+
               if (mainArea) {
-                mainArea.innerHTML = `
-                  <div style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 10px 18px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                // Tạo khung chứa nếu chưa có, không dùng innerHTML để tránh làm mất code gốc
+                if (!iframeBox) {
+                  iframeBox = document.createElement('div');
+                  iframeBox.id = 'custom-exam-iframe-container';
+                  iframeBox.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 40; background: #0f172a; display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; gap: 8px;';
+                  iframeBox.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 10px 18px; border-radius: 10px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                       <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 18px;">🎯</span>
                         <span style="font-weight: 700; color: #38bdf8; font-size: 14px;">HỆ THỐNG LUYỆN TẬP VÀ KIỂM TRA TRỰC TUYẾN</span>
                       </div>
                       <a href="${URL_APP_LUYEN_TAP}" target="_blank" rel="noopener noreferrer" 
-                         style="display: inline-flex; align-items: center; gap: 6px; background: #0284c7; color: #ffffff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s;"
-                         onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0284c7'">
+                         style="display: inline-flex; align-items: center; gap: 6px; background: #0284c7; color: #ffffff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;">
                         <span>Mở toàn màn hình tab mới</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                       </a>
                     </div>
                     <iframe 
                       src="${URL_APP_LUYEN_TAP}" 
-                      style="width: 100%; flex: 1; min-height: calc(100vh - 145px); border: 1px solid #1e293b; border-radius: 10px; background: #ffffff;"
+                      style="width: 100%; flex: 1; border: 1px solid #334155; border-radius: 10px; background: #ffffff;"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; full-screen"
                       allowfullscreen>
                     </iframe>
-                  </div>
-                `;
+                  `;
+                  // Đảm bảo khung cha có position: relative để khung con phủ trọn vẹn
+                  mainArea.style.position = 'relative';
+                  mainArea.appendChild(iframeBox);
+                }
+                iframeBox.style.display = 'flex';
               }
-            }, 80);
+            }, 60);
           });
         }
-      }
 
+        // 2. Tự động ẨN KHUNG IFRAME khi bấm sang các tab khác
+        allButtons.forEach(btn => {
+          if (btn !== examBtn && !btn.dataset.listenLmsHide) {
+            btn.dataset.listenLmsHide = "true";
+            btn.addEventListener('click', () => {
+              const iframeBox = document.getElementById('custom-exam-iframe-container');
+              if (iframeBox) {
+                iframeBox.style.display = 'none'; // Chỉ ẩn đi, giữ nguyên vẹn nội dung của tab khác
+              }
+            });
+          }
+        });
+      }
         function applyRole(role) {
           const overlay = document.getElementById('app-lock-overlay');
           if (overlay) overlay.style.setProperty('display', 'none', 'important');
