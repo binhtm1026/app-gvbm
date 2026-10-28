@@ -902,6 +902,92 @@
     const obs = new MutationObserver(clearPopups);
     obs.observe(document.documentElement, { childList: true, subtree: true });
   })();
+// =========================================================================
+    // TỰ ĐỘNG THÊM TÍNH NĂNG "TIẾT TRỐNG / NGHỈ" VÀO LỊCH BÁO GIẢNG
+    // =========================================================================
+    function injectEmptyPeriodFeature() {
+      // 1. Quét tìm tất cả các khung card tiết học trong Lịch báo giảng
+      const periodCards = Array.from(document.querySelectorAll('div')).filter(el => {
+        const txt = el.innerText || '';
+        return (txt.includes('Tiết 1') || txt.includes('Tiết 2') || txt.includes('Tiết 3') || 
+                txt.includes('Tiết 4') || txt.includes('Tiết 5') || txt.includes('Tiết 6') || 
+                txt.includes('Tiết 7') || txt.includes('Tiết 8')) && 
+               (txt.includes('Ghi tên bài dạy') || txt.includes('--:--'));
+      });
+
+      periodCards.forEach(card => {
+        // Tránh gắn lặp lại nhiều lần
+        if (card.dataset.hasEmptyBtn) return;
+        card.dataset.hasEmptyBtn = "true";
+
+        // Tạo nút bấm "Trống" nhỏ gọn, tinh tế ở góc trên phải của mỗi tiết
+        const emptyBtn = document.createElement('button');
+        emptyBtn.type = 'button';
+        emptyBtn.innerText = '✕ Trống';
+        emptyBtn.title = 'Đặt làm tiết trống (không dạy)';
+        emptyBtn.style.cssText = `
+          margin-left: auto;
+          font-size: 11px;
+          padding: 2px 7px;
+          border-radius: 6px;
+          background: rgba(239, 68, 68, 0.15);
+          color: #fca5a5;
+          border: 1px solid rgba(239, 68, 68, 0.35);
+          cursor: pointer;
+          transition: all 0.2s;
+        `;
+        emptyBtn.onmouseover = () => {
+          emptyBtn.style.background = '#dc2626';
+          emptyBtn.style.color = '#ffffff';
+        };
+        emptyBtn.onmouseout = () => {
+          emptyBtn.style.background = 'rgba(239, 68, 68, 0.15)';
+          emptyBtn.style.color = '#fca5a5';
+        };
+
+        // Khi bấm vào nút "✕ Trống":
+        emptyBtn.onclick = (e) => {
+          e.stopPropagation();
+          // Tìm ô chọn lớp và ô chọn môn trong card
+          const buttonsInCard = card.querySelectorAll('button');
+          buttonsInCard.forEach(b => {
+            const bTxt = (b.innerText || '').trim();
+            // Nếu card đang chọn lớp, bấm mở menu chọn rồi kích hoạt "Bỏ chọn lớp"
+            if (!bTxt.includes('Tiết') && !bTxt.includes('Trống')) {
+              b.click();
+              setTimeout(() => {
+                const clearBtn = Array.from(document.querySelectorAll('button, div, span')).find(item => 
+                  (item.innerText || '').trim() === 'Bỏ chọn lớp'
+                );
+                if (clearBtn) clearBtn.click();
+              }, 30);
+            }
+          });
+
+          // Xóa luôn phần chữ ghi chú / tên bài dạy nếu có ô nhập
+          const noteInput = card.querySelector('input');
+          if (noteInput) {
+            noteInput.value = '';
+            noteInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          // Đổi màu viền nhẹ để báo hiệu tiết này là tiết trống
+          card.style.opacity = '0.6';
+          card.style.border = '1px dashed #475569';
+        };
+
+        // Gắn nút vào thanh tiêu đề nhỏ của Tiết (nơi có chữ "Tiết X")
+        const headerRow = card.querySelector('div') || card.firstElementChild;
+        if (headerRow) {
+          headerRow.style.display = 'flex';
+          headerRow.style.alignItems = 'center';
+          headerRow.appendChild(emptyBtn);
+        }
+      });
+    }
+
+    // Quét liên tục để hiển thị nút Trống khi chuyển giữa các Thứ trong tuần
+    setInterval(injectEmptyPeriodFeature, 400);
 </script>    
 <script type="module">
 <style>
