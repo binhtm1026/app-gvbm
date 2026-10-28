@@ -641,7 +641,11 @@
           });
 
           injectTeacherCard();
-          const observer = new MutationObserver(injectTeacherCard);
+          handleCustomExamTab(); // Thêm dòng này để chạy ngay khi mở web
+          const observer = new MutationObserver(() => {
+            injectTeacherCard();
+            handleCustomExamTab(); // Thêm dòng này để quét liên tục đổi tab
+          });
           observer.observe(document.body, { childList: true, subtree: true });
         });
       })();
