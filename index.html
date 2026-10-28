@@ -651,6 +651,46 @@
       })();
     </script>
     <!-- ========================================================================================== -->
+// TỰ ĐỘNG XÓA BỎ HOÀN TOÀN CÁC LỚP 12 MẪU TRONG LỊCH BÁO GIẢNG VÀ DANH SÁCH LỚP
+      (function removeGrade12Sample() {
+        const sampleClasses = ['12A1', '12A2', '12A3', 'Lớp 12A1', 'Lớp 12A2', 'Lớp 12A3'];
+
+        // 1. Dọn trong localStorage
+        Object.keys(localStorage).forEach(key => {
+          try {
+            const raw = localStorage.getItem(key);
+            if (raw && (raw.includes('12A1') || raw.includes('12A2') || raw.includes('12A3'))) {
+              let parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                // Lọc bỏ nếu là mảng
+                parsed = parsed.filter(item => {
+                  const name = typeof item === 'string' ? item : (item.name || item.className || item.lop || '');
+                  return !sampleClasses.some(sc => name.includes(sc));
+                });
+                localStorage.setItem(key, JSON.stringify(parsed));
+              } else if (typeof parsed === 'object' && parsed !== null) {
+                // Nếu là object thời khóa biểu
+                let str = JSON.stringify(parsed);
+                sampleClasses.forEach(sc => {
+                  str = str.split(`"${sc}"`).join('""');
+                });
+                localStorage.setItem(key, str);
+              }
+            }
+          } catch(e) {}
+        });
+
+        // 2. Tự động ẩn khỏi menu chọn nhanh trên giao diện
+        setInterval(() => {
+          const classItems = document.querySelectorAll('.DANH\\ SÁCH\\ LỚP\\ GIẢNG\\ DẠY div, [class*="DANH SÁCH"] div, ul li, div');
+          classItems.forEach(el => {
+            const text = (el.innerText || '').trim();
+            if (sampleClasses.includes(text) || text === 'Lớp 12A1' || text === 'Lớp 12A2' || text === 'Lớp 12A3') {
+              el.style.setProperty('display', 'none', 'important');
+            }
+          });
+        }, 500);
+      })();
     <script type="module">
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
