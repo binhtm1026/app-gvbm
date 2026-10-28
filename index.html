@@ -636,7 +636,48 @@
           window.switchRole('admin');
         }
 
-        // 4. Kiểm tra mật khẩu
+        // 4. Kiểm tra mật khẩu & Tự động kết nối Cloud Realtime cho cả Admin và Khách
+        const FIREBASE_ACC_EMAIL = "binhtm.1026@gmail.com";
+        const FIREBASE_ACC_PASS = "thaybinh123";
+
+        async function loginAndSyncFirebase() {
+          try {
+            // 1. Tự động điền email và mật khẩu vào form đăng nhập Firebase nếu có
+            const emailInput = document.querySelector('input[type="email"]') || document.querySelector('input[placeholder*="email" i]');
+            const passInputs = Array.from(document.querySelectorAll('input[type="password"]')).filter(i => i.id !== 'lock-pass');
+            
+            if (emailInput && passInputs.length > 0) {
+              emailInput.value = FIREBASE_ACC_EMAIL;
+              emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+              emailInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+              passInputs[0].value = FIREBASE_ACC_PASS;
+              passInputs[0].dispatchEvent(new Event('input', { bubbles: true }));
+              passInputs[0].dispatchEvent(new Event('change', { bubbles: true }));
+
+              const loginBtn = Array.from(document.querySelectorAll('button')).find(b => {
+                const t = (b.innerText || '').trim();
+                return t === 'Đăng nhập' || t === 'Kết nối Firebase';
+              });
+              if (loginBtn) loginBtn.click();
+            }
+
+            // 2. Kích hoạt nút đồng bộ / tải về dữ liệu Cloud
+            setTimeout(() => {
+              const allBtns = Array.from(document.querySelectorAll('button'));
+              const syncBtn = allBtns.find(b => {
+                const t = (b.innerText || '').trim();
+                return t.includes('Tải về từ Firebase') || t.includes('Đồng bộ ngay') || t.includes('Kéo dữ liệu') || t.includes('Lấy dữ liệu đám mây');
+              });
+              if (syncBtn) {
+                syncBtn.click();
+              }
+            }, 1000);
+          } catch (e) {
+            console.warn("Lỗi đồng bộ Firebase:", e);
+          }
+        }
+
         function checkPass() {
           const passInput = document.getElementById('lock-pass');
           const err = document.getElementById('lock-err');
@@ -646,6 +687,7 @@
             if (val === PASS_ADMIN) {
               sessionStorage.setItem('user_access_role', 'admin');
               applyRole('admin');
+              setTimeout(loginAndSyncFirebase, 600);
             } else {
               if (err) err.style.display = 'block';
             }
@@ -653,18 +695,8 @@
             if (val === PASS_GUEST) {
               sessionStorage.setItem('user_access_role', 'guest');
               applyRole('guest');
-
-              // Tự động kéo dữ liệu về cho máy khách xem
-              setTimeout(() => {
-                try {
-                  const allBtns = Array.from(document.querySelectorAll('button'));
-                  const syncBtn = allBtns.find(b => {
-                    const t = (b.innerText || '').trim();
-                    return t.includes('Tải về từ Firebase') || t.includes('Đồng bộ ngay') || t.includes('Kéo dữ liệu');
-                  });
-                  if (syncBtn) syncBtn.click();
-                } catch (e) {}
-              }, 1000);
+              // Khách thăm được đăng nhập ngầm để lấy toàn bộ dữ liệu mới nhất
+              setTimeout(loginAndSyncFirebase, 600);
             } else {
               if (err) err.style.display = 'block';
             }
@@ -802,8 +834,6 @@
           handleCustomExamTab();
         });
         observer.observe(document.body, { childList: true, subtree: true });
-      })();
-    </script>
       })();
     </script>
     <!-- ========================================================================================== -->
