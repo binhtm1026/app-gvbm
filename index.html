@@ -568,6 +568,7 @@
 
         let currentRole = 'admin';
 
+        // 1. Hàm chuyển đổi giao diện khi bấm Quản trị viên / Khách thăm
         window.switchRole = function(role) {
           currentRole = role;
           const tabAdmin = document.getElementById('tab-admin');
@@ -580,20 +581,32 @@
           if (passInput) passInput.value = '';
 
           if (role === 'admin') {
-            tabAdmin.classList.add('active');
-            tabGuest.classList.remove('active');
-            passInput.placeholder = "Nhập mật khẩu Quản trị...";
-            btn.className = "btn-admin";
-            btn.innerText = "Đăng nhập Quản trị";
+            if (tabAdmin) tabAdmin.classList.add('active');
+            if (tabGuest) tabGuest.classList.remove('active');
+            if (passInput) passInput.placeholder = "Nhập mật khẩu Quản trị...";
+            if (btn) {
+              btn.className = "btn-admin";
+              btn.innerText = "Đăng nhập Quản trị";
+            }
           } else {
-            tabGuest.classList.add('active');
-            tabAdmin.classList.remove('active');
-            passInput.placeholder = "Nhập mật khẩu Khách xem...";
-            btn.className = "btn-guest";
-            btn.innerText = "Đăng nhập Khách xem";
+            if (tabGuest) tabGuest.classList.add('active');
+            if (tabAdmin) tabAdmin.classList.remove('active');
+            if (passInput) passInput.placeholder = "Nhập mật khẩu Khách xem...";
+            if (btn) {
+              btn.className = "btn-guest";
+              btn.innerText = "Đăng nhập Khách xem";
+            }
           }
           if (passInput) passInput.focus();
         };
+
+        // Gán sự kiện click trực tiếp bằng JS để không bao giờ bị đơ nút
+        setTimeout(() => {
+          const tAdmin = document.getElementById('tab-admin');
+          const tGuest = document.getElementById('tab-guest');
+          if (tAdmin) tAdmin.onclick = () => window.switchRole('admin');
+          if (tGuest) tGuest.onclick = () => window.switchRole('guest');
+        }, 100);
 
         function injectTeacherCard() {
           if (document.getElementById('custom-teacher-wrapper')) return;
