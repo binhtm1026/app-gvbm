@@ -372,6 +372,36 @@
       #btn-app-logout:hover {
         background: #b91c1c !important;
       }
+/* ĐỒNG BỘ MÀU NỀN CHO TAB LUYỆN TẬP VÀ KIỂM TRA */
+      button:has(> span:contains("Luyện tập và kiểm tra")),
+      button[data-merged-lms="true"],
+      nav button:has(*:contains("Luyện tập và kiểm tra")),
+      aside button:has(*:contains("Luyện tập và kiểm tra")) {
+        transition: all 0.2s ease !important;
+      }
+
+      /* Đổi màu khi tab đang được chọn (Active) */
+      button[data-merged-lms="true"][class*="bg-"],
+      button:has(*:contains("Luyện tập và kiểm tra"))[class*="bg-amber"],
+      button:has(*:contains("Luyện tập và kiểm tra"))[class*="bg-yellow"],
+      button:has(*:contains("Luyện tập và kiểm tra"))[style*="background"] {
+        background: linear-gradient(135deg, #1e293b, #334155) !important; /* Hoặc đổi sang tông tím/xanh đen theo giao diện chính */
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.6) !important;
+      }
+
+      /* Đổi màu chữ và biểu tượng bên trong */
+      button:has(*:contains("Luyện tập và kiểm tra")) svg,
+      button:has(*:contains("Luyện tập và kiểm tra")) span {
+        color: #e2e8f0 !important;
+      }
+
+      /* Thanh tiêu đề nhỏ phía trên iframe */
+      .custom-exam-header-bar {
+        background: #0b1329 !important;
+        border: 1px solid #1e293b !important;
+      }
     </style>
 
     <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
