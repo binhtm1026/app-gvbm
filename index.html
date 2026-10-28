@@ -402,6 +402,55 @@
         background: #0b1329 !important;
         border: 1px solid #1e293b !important;
       }
+/* ========================================================================= */
+      /* ĐỒNG BỘ NỀN VÀ MÀU SẮC CHỦ ĐẠO THEO LMS TOÁN THẦY BÌNH (XANH NGỌC PASTEL) */
+      /* ========================================================================= */
+      
+      /* 1. Nền tổng thể và vùng hiển thị chính */
+      body, 
+      #root, 
+      main, 
+      .flex-1.overflow-y-auto {
+        background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 50%, #f8fafc 100%) !important;
+        color: #0f172a !important;
+      }
+
+      /* 2. Cột menu bên trái (Sidebar) */
+      aside, 
+      nav, 
+      .w-64, 
+      [class*="sidebar"] {
+        background: #0f172a !important;
+        border-right: 1px solid rgba(13, 148, 136, 0.2) !important;
+      }
+
+      /* 3. Khung hiển thị và tiêu đề LMS */
+      #custom-exam-iframe-container > div:first-child {
+        background: #ffffff !important;
+        border: 1px solid #ccfbf1 !important;
+        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.08) !important;
+      }
+      #custom-exam-iframe-container span {
+        color: #0d9488 !important;
+      }
+      #custom-exam-iframe-container iframe {
+        border: 1px solid #ccfbf1 !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+      }
+
+      /* 4. Tab Luyện tập và kiểm tra trên menu */
+      button:has(*:contains("Luyện tập và kiểm tra"))[class*="bg-"],
+      button:has(*:contains("Luyện tập và kiểm tra"))[style*="background"],
+      button[data-merged-lms="true"][class*="bg-"] {
+        background: linear-gradient(135deg, #0d9488, #059669) !important;
+        color: #ffffff !important;
+        border: 1px solid #14b8a6 !important;
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4) !important;
+      }
+      button:has(*:contains("Luyện tập và kiểm tra")) span,
+      button:has(*:contains("Luyện tập và kiểm tra")) svg {
+        color: #ffffff !important;
+      }
     </style>
 
     <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
@@ -743,7 +792,7 @@
           });
         }, 500);
       })();
-<script>
+</script>
     <script type="module">
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
