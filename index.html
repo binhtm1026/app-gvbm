@@ -403,53 +403,82 @@
         border: 1px solid #1e293b !important;
       }
 /* ========================================================================= */
-      /* ĐỒNG BỘ NỀN VÀ MÀU SẮC CHỦ ĐẠO THEO LMS TOÁN THẦY BÌNH (XANH NGỌC PASTEL) */
+      /* PHỐI MÀU CAO CẤP: DEEP TEAL & EMERALD (SẮC NÉT, ĐỒNG BỘ, RÕ TỪNG NÉT CHỮ) */
       /* ========================================================================= */
-      
-      /* 1. Nền tổng thể và vùng hiển thị chính */
+
+      /* 1. Nền tổng thể vùng nội dung chính (Xanh than ánh ngọc bích sâu) */
       body, 
       #root, 
       main, 
       .flex-1.overflow-y-auto {
-        background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 50%, #f8fafc 100%) !important;
-        color: #0f172a !important;
+        background: radial-gradient(circle at top right, #092e2b 0%, #061e1c 50%, #041413 100%) !important;
+        color: #f1f5f9 !important;
       }
 
-      /* 2. Cột menu bên trái (Sidebar) */
+      /* 2. Cột menu bên trái (Sidebar) - Tối chuẩn mực, viền ngọc tinh tế */
       aside, 
       nav, 
       .w-64, 
       [class*="sidebar"] {
-        background: #0f172a !important;
-        border-right: 1px solid rgba(13, 148, 136, 0.2) !important;
+        background: #031615 !important;
+        border-right: 1px solid rgba(20, 184, 166, 0.25) !important;
       }
 
-      /* 3. Khung hiển thị và tiêu đề LMS */
+      /* 3. Khắc phục triệt để chữ và icon ở Menu bị mờ */
+      aside button,
+      nav button {
+        color: #cbd5e1 !important; /* Chữ xám sáng rõ ràng */
+      }
+      aside button:hover,
+      nav button:hover {
+        background: rgba(20, 184, 166, 0.12) !important;
+        color: #5eead4 !important;
+      }
+      aside button svg,
+      nav button svg {
+        color: #2dd4bf !important; /* Icon màu xanh ngọc phát sáng */
+      }
+
+      /* 4. Tab đang được chọn (Active) - Tông Xanh Ngọc Bích Đẳng Cấp */
+      aside button[class*="bg-"],
+      nav button[class*="bg-"],
+      button:has(*:contains("Luyện tập và kiểm tra"))[class*="bg-"],
+      button[data-merged-lms="true"][class*="bg-"] {
+        background: linear-gradient(135deg, #0d9488 0%, #115e59 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid #2dd4bf !important;
+        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.35) !important;
+      }
+      aside button[class*="bg-"] span,
+      aside button[class*="bg-"] svg {
+        color: #ffffff !important;
+      }
+
+      /* 5. Khắc phục dòng chữ "PHÍM TẮT & KẾT QUẢ NHANH" bị mờ */
+      h2, h3, .text-xs, .text-sm, span {
+        text-shadow: none !important;
+      }
+      div:has(> [class*="PHÍM TẮT"]),
+      div:has(> span:contains("PHÍM TẮT")) {
+        color: #5eead4 !important;
+        font-weight: 700 !important;
+      }
+
+      /* 6. Khung nhúng ứng dụng LMS */
+      #custom-exam-iframe-container {
+        background: #041413 !important;
+      }
       #custom-exam-iframe-container > div:first-child {
-        background: #ffffff !important;
-        border: 1px solid #ccfbf1 !important;
-        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.08) !important;
+        background: #082826 !important;
+        border: 1px solid rgba(45, 212, 191, 0.3) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
       }
       #custom-exam-iframe-container span {
-        color: #0d9488 !important;
+        color: #5eead4 !important;
       }
       #custom-exam-iframe-container iframe {
-        border: 1px solid #ccfbf1 !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
-      }
-
-      /* 4. Tab Luyện tập và kiểm tra trên menu */
-      button:has(*:contains("Luyện tập và kiểm tra"))[class*="bg-"],
-      button:has(*:contains("Luyện tập và kiểm tra"))[style*="background"],
-      button[data-merged-lms="true"][class*="bg-"] {
-        background: linear-gradient(135deg, #0d9488, #059669) !important;
-        color: #ffffff !important;
-        border: 1px solid #14b8a6 !important;
-        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4) !important;
-      }
-      button:has(*:contains("Luyện tập và kiểm tra")) span,
-      button:has(*:contains("Luyện tập và kiểm tra")) svg {
-        color: #ffffff !important;
+        border: 1px solid rgba(45, 212, 191, 0.25) !important;
+        border-radius: 10px !important;
       }
     </style>
 
