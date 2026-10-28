@@ -752,12 +752,29 @@
                 sessionStorage.setItem('user_access_role', 'admin');
                 applyRole('admin');
               } else {
-                if (err) err.style.display = 'block';
-              }
-            } else {
               if (val === PASS_GUEST) {
                 sessionStorage.setItem('user_access_role', 'guest');
                 applyRole('guest');
+
+                // TỰ ĐỘNG KẾT NỐI VÀ KÉO DỮ LIỆU CLOUD MỚI NHẤT VỀ CHO KHÁCH XEM
+                setTimeout(async () => {
+                  try {
+                    // 1. Tự động tìm và bấm kích hoạt nút nạp dữ liệu Firebase trên giao diện nếu có
+                    const allBtns = Array.from(document.querySelectorAll('button'));
+                    const syncBtn = allBtns.find(b => {
+                      const t = (b.innerText || '').trim();
+                      return t.includes('Tải về từ Firebase') || t.includes('Đồng bộ ngay') || t.includes('Kéo dữ liệu');
+                    });
+                    if (syncBtn) {
+                      syncBtn.click();
+                    } else if (window.firebaseSyncPull) {
+                      // 2. Kích hoạt trực tiếp hàm kéo dữ liệu nếu app có khai báo hàm toàn cục
+                      window.firebaseSyncPull();
+                    }
+                  } catch (e) {
+                    console.warn("Lỗi tự động kéo dữ liệu cho khách:", e);
+                  }
+                }, 1200);
               } else {
                 if (err) err.style.display = 'block';
               }
