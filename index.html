@@ -480,6 +480,15 @@
         border: 1px solid rgba(45, 212, 191, 0.25) !important;
         border-radius: 10px !important;
       }
+/* TRIỆT TIÊU HOÀN TOÀN CÁC LỚP 12A1, 12A2, 12A3 TRONG TOÀN BỘ APP */
+      [class*="DANH SÁCH"] div:has-text("12A1"),
+      [class*="DANH SÁCH"] div:has-text("12A2"),
+      [class*="DANH SÁCH"] div:has-text("12A3"),
+      div:has(> span:contains("12A1")),
+      div:has(> span:contains("12A2")),
+      div:has(> span:contains("12A3")) {
+        display: none !important;
+      }
     </style>
 
     <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
@@ -838,48 +847,63 @@
     </script>
     <!-- ========================================================================================== -->
 <script>
-// TỰ ĐỘNG XÓA BỎ HOÀN TOÀN CÁC LỚP 12 MẪU TRONG LỊCH BÁO GIẢNG VÀ DANH SÁCH LỚP
-      (function removeGrade12Sample() {
-        const sampleClasses = ['12A1', '12A2', '12A3', 'Lớp 12A1', 'Lớp 12A2', 'Lớp 12A3'];
+  (function purgeGrade12Completely() {
+    const targets = ['12A1', '12A2', '12A3', 'Lớp 12A1', 'Lớp 12A2', 'Lớp 12A3'];
 
-        // 1. Dọn trong localStorage
-        Object.keys(localStorage).forEach(key => {
+    // 1. Quét sạch trong bộ nhớ localStorage của trình duyệt
+    try {
+      Object.keys(localStorage).forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val && targets.some(t => val.includes(t))) {
           try {
-            const raw = localStorage.getItem(key);
-            if (raw && (raw.includes('12A1') || raw.includes('12A2') || raw.includes('12A3'))) {
-              let parsed = JSON.parse(raw);
-              if (Array.isArray(parsed)) {
-                // Lọc bỏ nếu là mảng
-                parsed = parsed.filter(item => {
-                  const name = typeof item === 'string' ? item : (item.name || item.className || item.lop || '');
-                  return !sampleClasses.some(sc => name.includes(sc));
-                });
-                localStorage.setItem(key, JSON.stringify(parsed));
-              } else if (typeof parsed === 'object' && parsed !== null) {
-                // Nếu là object thời khóa biểu
-                let str = JSON.stringify(parsed);
-                sampleClasses.forEach(sc => {
-                  str = str.split(`"${sc}"`).join('""');
-                });
-                localStorage.setItem(key, str);
-              }
+            let data = JSON.parse(val);
+            if (Array.isArray(data)) {
+              data = data.filter(item => {
+                const name = typeof item === 'string' ? item : (item.name || item.className || item.lop || '');
+                return !targets.some(t => name.includes(t));
+              });
+              localStorage.setItem(key, JSON.stringify(data));
+            } else if (typeof data === 'object' && data !== null) {
+              let str = JSON.stringify(data);
+              targets.forEach(t => {
+                str = str.split(`"${t}"`).join('""');
+              });
+              localStorage.setItem(key, str);
             }
           } catch(e) {}
-        });
+        }
+      });
+    } catch(e) {}
 
-        // 2. Tự động ẩn khỏi menu chọn nhanh trên giao diện
-        setInterval(() => {
-          const classItems = document.querySelectorAll('.DANH\\ SÁCH\\ LỚP\\ GIẢNG\\ DẠY div, [class*="DANH SÁCH"] div, ul li, div');
-          classItems.forEach(el => {
-            const text = (el.innerText || '').trim();
-            if (sampleClasses.includes(text) || text === 'Lớp 12A1' || text === 'Lớp 12A2' || text === 'Lớp 12A3') {
-              el.style.setProperty('display', 'none', 'important');
-            }
-          });
-        }, 500);
-      })();
-</script>
-    <script type="module">
+    // 2. Tự động bóc tách và xóa sạch DOM của 3 lớp 12 ngay khi bảng popup vừa bật lên
+    function clearPopups() {
+      // Tìm tất cả các thẻ chữ, button, div chứa 12A1, 12A2, 12A3
+      const elements = Array.from(document.querySelectorAll('div, button, li, p, span'));
+      elements.forEach(el => {
+        // Chỉ xử lý các thẻ con trực tiếp chứa đúng tên lớp để không xóa nhầm container lớn
+        const txt = (el.innerText || '').trim();
+        if (targets.some(t => txt === t || txt === `Lớp ${t}`)) {
+          // Ẩn và gỡ bỏ phần tử đó khỏi danh sách chọn
+          el.style.setProperty('display', 'none', 'important');
+          if (el.parentNode && el.children.length <= 1) {
+            el.remove();
+          }
+        }
+      });
+    }
+
+    // Lắng nghe liên tục khi thầy bấm vào ô "Chọn lớp"
+    window.addEventListener('click', () => {
+      setTimeout(clearPopups, 10);
+      setTimeout(clearPopups, 50);
+      setTimeout(clearPopups, 150);
+    }, true);
+
+    const obs = new MutationObserver(clearPopups);
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  })();
+</script>    
+<script type="module">
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
