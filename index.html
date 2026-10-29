@@ -1174,13 +1174,14 @@
         
 // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
    // =========================================================================
-        // TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD VÀ QUA CÁC TRÌNH DUYỆT KHÁC
+      // =========================================================================
+        // TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD FIREBASE VÀ TRÌNH DUYỆT MỚI
         // =========================================================================
-        (function autoSyncTeachingSchedule() {
-          const SCHEDULE_KEY = 'teacher_full_timetable_backup';
+        (function autoSyncScheduleWithFirebase() {
+          const FIREBASE_URL = 'https://app-gvbm-default-rtdb.firebaseio.com/teaching_schedule.json';
 
-          // 1. Quét tìm tất cả các mục lưu thời khóa biểu trong LocalStorage
-          function getScheduleData() {
+          // 1. Quét tìm tất cả các mục lưu lịch báo giảng trong LocalStorage
+          function getFullSchedule() {
             let data = {};
             for (let i = 0; i < localStorage.length; i++) {
               let k = localStorage.key(i);
@@ -1191,145 +1192,67 @@
             return data;
           }
 
-          // 2. Bắt sự kiện khi bấm nút Đồng bộ / Lưu dữ liệu
-          document.addEventListener('click', function(e) {
-            const btn = e.target.closest('button, a');
-            if (!btn) return;
-            const txt = (btn.innerText || '').toLowerCase();
-
-            // Nếu bấm Lưu / Sao lưu / Đồng bộ
-            if (txt.includes('đồng bộ') || txt.includes('sao lưu') || txt.includes('lưu') || txt.includes('firebase')) {
-              const currentSchedule = getScheduleData();
-              if (Object.keys(currentSchedule).length > 0) {
-                // Đóng gói vào một mục dữ liệu lớn để đồng bộ chung
-                localStorage.setItem(SCHEDULE_KEY, JSON.stringify(currentSchedule));
-              }
-            }
-          }, true);
-
-          // 3. Khi mở web ở trình duyệt mới: Tự động khôi phục lịch nếu có bản sao lưu
-          try {
-            const backupRaw = localStorage.getItem(SCHEDULE_KEY);
-            if (backupRaw) {
-              const parsed = JSON.parse(backupRaw);
-              let changed = false;
-              for (let k in parsed) {
-                if (!localStorage.getItem(k)) {
-                  localStorage.setItem(k, parsed[k]);
-                  changed = true;
-                }
-              }
-              if (changed) {
-                console.log("Đã tự động khôi phục Lịch báo giảng thành công!");
-              }
-            }
-          } catch (err) {}
-        })();     
-function initAppLockEvents() {
-          const passInput = document.getElementById('lock-pass');
-          const btn = document.getElementById('lock-btn');
-          const tAdmin = document.getElementById('tab-admin');
-          const tGuest = document.getElementById('tab-guest');
-
-          if (tAdmin) {
-            tAdmin.onclick = function() { window.switchRole('admin'); };
-          }
-          if (tGuest) {
-            tGuest.onclick = function() { window.switchRole('guest'); };
-          }
-          if (btn) {
-            btn.onclick = checkPass;
-          }
-          if (passInput) {
-            passInput.onkeypress = function(e) {
-              if (e.key === 'Enter') checkPass();
-            };
-            setTimeout(() => passInput.focus(), 200);
-          }
-
-          const savedRole = sessionStorage.getItem('user_access_role');
-          if (savedRole) {
-            applyRole(savedRole);
-          }
-        }
-
-        if (document.readyState === 'loading') {
-          window.addEventListener('DOMContentLoaded', initAppLockEvents);
-        } else {
-          initAppLockEvents();
-        }
-
-        // Tự động sắp xếp lại LocalStorage khi vừa vào trang
-        try {
-          const sampleCodes = ['HS1201', 'HS1202', 'HS1203', 'HS1204', 'HS1205', 'HS1206', 'HS1207', 'HS1208', 'HS1209', 'HS1210'];
-          ['co_thuy_ai_students_v2', 'thay_binh_ai_students_v2'].forEach(k => {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-              let list = JSON.parse(raw);
-              if (Array.isArray(list) && list.length > 0) {
-                list = list.filter(st => {
-                  const code = (st.studentCode || st.code || '').toString();
-                  const cId = (st.classId || '').toString();
-                  return !st.isSample && !sampleCodes.includes(code) && !code.startsWith('HS12') && !cId.includes('12');
+          // 2. Tự động lưu lên Firebase mỗi khi thầy thay đổi tiết dạy trên giao diện
+          async function pushScheduleToCloud() {
+            try {
+              const data = getFullSchedule();
+              if (Object.keys(data).length > 0) {
+                await fetch(FIREBASE_URL, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
                 });
-                const splitName = (fullName) => {
-                  const parts = (fullName || '').trim().split(/\s+/);
-                  const firstName = parts.length > 0 ? parts[parts.length - 1] : '';
-                  const lastName = parts.slice(0, -1).join(' ');
-                  return { firstName, lastName };
-                };
-                list.sort((a, b) => {
-                  if (a.classId && b.classId && a.classId !== b.classId) return a.classId.localeCompare(b.classId, 'vi');
-                  const nameA = splitName(a.fullName || a.name || '');
-                  const nameB = splitName(b.fullName || b.name || '');
-                  const cmpFirst = nameA.firstName.localeCompare(nameB.firstName, 'vi', { sensitivity: 'base' });
-                  if (cmpFirst !== 0) return cmpFirst;
-                  const cmpLast = nameA.lastName.localeCompare(nameB.lastName, 'vi', { sensitivity: 'base' });
-                  if (cmpLast !== 0) return cmpLast;
-                  return (a.studentCode || '').toString().localeCompare((b.studentCode || '').toString(), 'vi', { numeric: true });
-                });
-                localStorage.setItem(k, JSON.stringify(list));
+                console.log('✅ Đã đồng bộ Lịch báo giảng lên Firebase thành công!');
               }
+            } catch (err) {
+              console.warn('Lỗi lưu lịch lên Firebase:', err);
+            }
+          }
+
+          // Lắng nghe khi thầy đổi môn, đổi lớp hoặc chỉnh sửa trên bảng lịch
+          document.addEventListener('change', function(e) {
+            const target = e.target;
+            if (target.closest('.schedule') || target.tagName === 'SELECT' || target.tagName === 'INPUT') {
+              setTimeout(pushScheduleToCloud, 500);
             }
           });
-        } catch(e) {}
 
-        // Dùng MutationObserver: quét giao diện sau khi đăng nhập thành công
-        const observer = new MutationObserver(() => {
-          injectTeacherCard();
-          renameAllExamTabs();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-      })();
-    </script>
-<script>
-  (function purgeGrade12Completely() {
-    const targets = ['12A1', '12A2', '12A3', 'Lớp 12A1', 'Lớp 12A2', 'Lớp 12A3'];
-
-    // 1. Quét sạch trong bộ nhớ localStorage của trình duyệt
-    try {
-      Object.keys(localStorage).forEach(key => {
-        const val = localStorage.getItem(key);
-        if (val && targets.some(t => val.includes(t))) {
-          try {
-            let data = JSON.parse(val);
-            if (Array.isArray(data)) {
-              data = data.filter(item => {
-                const name = typeof item === 'string' ? item : (item.name || item.className || item.lop || '');
-                return !targets.some(t => name.includes(t));
-              });
-              localStorage.setItem(key, JSON.stringify(data));
-            } else if (typeof data === 'object' && data !== null) {
-              let str = JSON.stringify(data);
-              targets.forEach(t => {
-                str = str.split(`"${t}"`).join('""');
-              });
-              localStorage.setItem(key, str);
+          // Cũng tự động đẩy lên khi thầy bấm nút Lưu / Đồng bộ
+          document.addEventListener('click', function(e) {
+            const btn = e.target.closest('button, a');
+            if (btn && (btn.innerText || '').toLowerCase().includes('đồng bộ')) {
+              setTimeout(pushScheduleToCloud, 1000);
             }
-          } catch(e) {}
-        }
-      });
-    } catch(e) {}
+          });
+
+          // 3. Tự động kéo lịch từ Firebase về khi mở trang web ở trình duyệt mới
+          async function pullScheduleFromCloud() {
+            try {
+              const res = await fetch(FIREBASE_URL);
+              if (res.ok) {
+                const cloudData = await res.json();
+                if (cloudData && typeof cloudData === 'object') {
+                  let hasNew = false;
+                  for (let k in cloudData) {
+                    if (localStorage.getItem(k) !== cloudData[k]) {
+                      localStorage.setItem(k, cloudData[k]);
+                      hasNew = true;
+                    }
+                  }
+                  // Nếu phát hiện có lịch mới từ đám mây kéo về thì cập nhật giao diện
+                  if (hasNew) {
+                    console.log('✅ Đã tải Lịch báo giảng mới nhất từ Firebase về máy!');
+                  }
+                }
+              }
+            } catch (err) {
+              console.warn('Không thể kéo lịch từ Firebase:', err);
+            }
+          }
+
+          // Tự động tải về ngay khi mở web
+          pullScheduleFromCloud();
+        })();
 
     // 2. Tự động bóc tách và xóa sạch DOM của 3 lớp 12 ngay khi bảng popup vừa bật lên
     function clearPopups() {
