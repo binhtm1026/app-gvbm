@@ -1173,7 +1173,59 @@
         })();
         
 // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
-        function initAppLockEvents() {
+   // =========================================================================
+        // TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD VÀ QUA CÁC TRÌNH DUYỆT KHÁC
+        // =========================================================================
+        (function autoSyncTeachingSchedule() {
+          const SCHEDULE_KEY = 'teacher_full_timetable_backup';
+
+          // 1. Quét tìm tất cả các mục lưu thời khóa biểu trong LocalStorage
+          function getScheduleData() {
+            let data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+              let k = localStorage.key(i);
+              if (k && (k.includes('schedule') || k.includes('timetable') || k.includes('teaching') || k.includes('lesson') || k.includes('plan'))) {
+                data[k] = localStorage.getItem(k);
+              }
+            }
+            return data;
+          }
+
+          // 2. Bắt sự kiện khi bấm nút Đồng bộ / Lưu dữ liệu
+          document.addEventListener('click', function(e) {
+            const btn = e.target.closest('button, a');
+            if (!btn) return;
+            const txt = (btn.innerText || '').toLowerCase();
+
+            // Nếu bấm Lưu / Sao lưu / Đồng bộ
+            if (txt.includes('đồng bộ') || txt.includes('sao lưu') || txt.includes('lưu') || txt.includes('firebase')) {
+              const currentSchedule = getScheduleData();
+              if (Object.keys(currentSchedule).length > 0) {
+                // Đóng gói vào một mục dữ liệu lớn để đồng bộ chung
+                localStorage.setItem(SCHEDULE_KEY, JSON.stringify(currentSchedule));
+              }
+            }
+          }, true);
+
+          // 3. Khi mở web ở trình duyệt mới: Tự động khôi phục lịch nếu có bản sao lưu
+          try {
+            const backupRaw = localStorage.getItem(SCHEDULE_KEY);
+            if (backupRaw) {
+              const parsed = JSON.parse(backupRaw);
+              let changed = false;
+              for (let k in parsed) {
+                if (!localStorage.getItem(k)) {
+                  localStorage.setItem(k, parsed[k]);
+                  changed = true;
+                }
+              }
+              if (changed) {
+                console.log("Đã tự động khôi phục Lịch báo giảng thành công!");
+              }
+            }
+          } catch (err) {}
+        })();     
+function initAppLockEvents() {
           const passInput = document.getElementById('lock-pass');
           const btn = document.getElementById('lock-btn');
           const tAdmin = document.getElementById('tab-admin');
