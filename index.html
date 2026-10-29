@@ -317,7 +317,20 @@
       body.guest-mode button:has(svg.lucide-save) {
         display: none !important;
       }
-
+/* ẨN NÚT CÀI ĐẶT VÀ SAO LƯU Ở CHẾ ĐỘ KHÁCH THĂM */
+      body.guest-mode button:has(svg.lucide-settings),
+      body.guest-mode button:has(svg.lucide-database),
+      body.guest-mode button:has(svg.lucide-download),
+      body.guest-mode button:has(svg.lucide-upload),
+      body.guest-mode button:has(*:contains("Cài đặt")),
+      body.guest-mode button:has(*:contains("Sao lưu")),
+      body.guest-mode button:has(*:contains("Khôi phục")),
+      body.guest-mode button:has(*:contains("Đồng bộ file JSON")),
+      body.guest-mode button:has(*:contains("Giao diện & Phối màu")),
+      body.guest-mode a:has(*:contains("Cài đặt")),
+      body.guest-mode a:has(*:contains("Sao lưu")) {
+        display: none !important;
+      }
       /* 3. KHUNG THÔNG TIN TÁC GIẢ & NÚT ĐĂNG XUẤT NẰM Ở MENU TRÁI */
       #custom-teacher-wrapper {
         display: flex !important;
