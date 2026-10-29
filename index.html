@@ -517,9 +517,14 @@
       }
 
       /* Khi khung LMS hiển thị (flex), các nội dung nền phía sau tạm ẩn để không bị nhá */
-      main.lms-active > div:not(#custom-exam-iframe-container) { display: none; }
+      main.lms-active > div:not(#custom-exam-iframe-container),
+      .flex-1.overflow-y-auto.lms-active > div:not(#custom-exam-iframe-container) {
+        display: none !important;
+      }
     </style>
-
+</head>
+  <body>
+    <div id="root"></div>
     <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
     <div id="app-lock-overlay">
       <!-- CỘT TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ NGHỆ THUẬT -->
@@ -1366,6 +1371,8 @@
         setInterval(runInject, 500);
       })();
     </script>
+</body>
+</html>
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
