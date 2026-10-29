@@ -1090,8 +1090,89 @@
             if (mainArea) mainArea.classList.remove('lms-active');
           }
         }, true);
+// =========================================================================
+        // SẮP XẾP BẢNG HỌC SINH & NHẬP ĐIỂM CHUẨN A-Z THEO TÊN TIẾNG VIỆT (TỰ ĐỘNG 100%)
+        // =========================================================================
+        (function forceSortStudentTables() {
+          const splitViName = (str) => {
+            const parts = (str || '').trim().split(/\s+/);
+            const firstName = parts.length > 0 ? parts[parts.length - 1] : '';
+            const lastName = parts.slice(0, -1).join(' ');
+            return { firstName, lastName };
+          };
 
-        // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
+          function runSort() {
+            const tables = document.querySelectorAll('table');
+            tables.forEach(table => {
+              const tbody = table.querySelector('tbody');
+              if (!tbody) return;
+
+              const rows = Array.from(tbody.querySelectorAll('tr'));
+              if (rows.length < 2) return;
+
+              // 1. Dò tìm cột Họ tên
+              let nameCol = -1;
+              const ths = Array.from(table.querySelectorAll('th, thead td'));
+              ths.forEach((th, idx) => {
+                const txt = (th.innerText || '').toLowerCase();
+                if (txt.includes('họ') || txt.includes('tên') || txt.includes('học sinh')) {
+                  if (nameCol === -1) nameCol = idx;
+                }
+              });
+
+              // Nếu không có header rõ ràng, tìm cột chứa chữ họ tên (có từ 2 từ trở lên)
+              if (nameCol === -1) {
+                const firstRowCells = Array.from(rows[0].children);
+                firstRowCells.forEach((td, idx) => {
+                  const val = (td.innerText || '').trim();
+                  if (val.split(/\s+/).length >= 2 && isNaN(val) && !val.includes('/') && nameCol === -1) {
+                    nameCol = idx;
+                  }
+                });
+              }
+
+              if (nameCol === -1) return;
+
+              // 2. Kiểm tra xem bảng đã đúng thứ tự A-Z chưa để không làm giật màn hình
+              let needSort = false;
+              for (let i = 0; i < rows.length - 1; i++) {
+                const a = splitViName(rows[i].children[nameCol]?.innerText || '');
+                const b = splitViName(rows[i + 1].children[nameCol]?.innerText || '');
+                const cmp = a.firstName.localeCompare(b.firstName, 'vi', { sensitivity: 'base' }) || 
+                            a.lastName.localeCompare(b.lastName, 'vi', { sensitivity: 'base' });
+                if (cmp > 0) {
+                  needSort = true;
+                  break;
+                }
+              }
+
+              if (!needSort) return;
+
+              // 3. Sắp xếp lại toàn bộ hàng theo Tên (A-Z) -> Họ lót
+              rows.sort((r1, r2) => {
+                const a = splitViName(r1.children[nameCol]?.innerText || '');
+                const b = splitViName(r2.children[nameCol]?.innerText || '');
+                const cmpFirst = a.firstName.localeCompare(b.firstName, 'vi', { sensitivity: 'base' });
+                if (cmpFirst !== 0) return cmpFirst;
+                return a.lastName.localeCompare(b.lastName, 'vi', { sensitivity: 'base' });
+              });
+
+              // 4. Cập nhật lại STT (cột 0 nếu là số) và gắn lại vào bảng
+              rows.forEach((r, idx) => {
+                const col0 = r.children[0];
+                if (col0 && /^\d+$/.test(col0.innerText.trim())) {
+                  col0.innerText = idx + 1;
+                }
+                tbody.appendChild(r);
+              });
+            });
+          }
+
+          // Chạy liên tục mỗi 300ms để bắt kịp khi thầy đổi lớp hoặc mở popup nhập điểm
+          setInterval(runSort, 300);
+        })();
+        
+// 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
         function initAppLockEvents() {
           const passInput = document.getElementById('lock-pass');
           const btn = document.getElementById('lock-btn');
