@@ -1172,76 +1172,65 @@
           setInterval(runSort, 300);
         })();
         
-// 7. TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD FIREBASE VÀ TRÌNH DUYỆT MỚI
-        (function autoSyncScheduleWithFirebase() {
-          const FIREBASE_URL = 'https://app-gvbm-default-rtdb.firebaseio.com/teaching_schedule.json';
+// 7. TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD FIREBASE VÀ TRÌNH DUYỆT MỚI (CHUẨN 100%)
+(function autoSyncScheduleWithFirebase() {
+  const DB_BASE = 'https://app-gvbm-thaybinhtoan-default-rtdb.firebaseio.com';
+  const SCHEDULE_KEY = 'teaching_schedule_data_v1';
+  let pushTimer = null;
 
-          function getFullSchedule() {
-            let data = {};
-            for (let i = 0; i < localStorage.length; i++) {
-              let k = localStorage.key(i);
-              if (k && (k.includes('schedule') || k.includes('timetable') || k.includes('teaching') || k.includes('lesson') || k.includes('plan'))) {
-                data[k] = localStorage.getItem(k);
-              }
-            }
-            return data;
-          }
+  // 1. Hàm đẩy dữ liệu Lịch báo giảng lên Cloud Firebase
+  async function pushScheduleToCloud() {
+    try {
+      const data = localStorage.getItem(SCHEDULE_KEY);
+      if (data) {
+        await fetch(`${DB_BASE}/teaching_schedule.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: data, updatedAt: new Date().toISOString() })
+        });
+        console.log('✅ Đã lưu Lịch báo giảng lên Firebase thành công!');
+      }
+    } catch (err) {
+      console.warn('Lỗi lưu lịch lên Firebase:', err);
+    }
+  }
 
-          async function pushScheduleToCloud() {
-            try {
-              const data = getFullSchedule();
-              if (Object.keys(data).length > 0) {
-                await fetch(FIREBASE_URL, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(data)
-                });
-                console.log('✅ Đã đồng bộ Lịch báo giảng lên Firebase thành công!');
-              }
-            } catch (err) {
-              console.warn('Lỗi lưu lịch lên Firebase:', err);
-            }
-          }
+  // 2. Tự động bắt mọi thay đổi khi thầy sửa lịch trên giao diện
+  const originalSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    originalSetItem(key, value);
+    if (key === SCHEDULE_KEY) {
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(pushScheduleToCloud, 800);
+    }
+  };
 
-          document.addEventListener('change', function(e) {
-            const target = e.target;
-            if (target && (target.closest('.schedule') || target.tagName === 'SELECT' || target.tagName === 'INPUT')) {
-              setTimeout(pushScheduleToCloud, 500);
-            }
-          });
-
-          document.addEventListener('click', function(e) {
-            const btn = e.target.closest('button, a');
-            if (btn && (btn.innerText || '').toLowerCase().includes('đồng bộ')) {
-              setTimeout(pushScheduleToCloud, 1000);
-            }
-          });
-
-          async function pullScheduleFromCloud() {
-            try {
-              const res = await fetch(FIREBASE_URL);
-              if (res.ok) {
-                const cloudData = await res.json();
-                if (cloudData && typeof cloudData === 'object') {
-                  let hasNew = false;
-                  for (let k in cloudData) {
-                    if (localStorage.getItem(k) !== cloudData[k]) {
-                      localStorage.setItem(k, cloudData[k]);
-                      hasNew = true;
-                    }
-                  }
-                  if (hasNew) {
-                    console.log('✅ Đã tải Lịch báo giảng mới nhất từ Firebase về máy!');
-                  }
-                }
-              }
-            } catch (err) {
-              console.warn('Không thể kéo lịch từ Firebase:', err);
+  // 3. Tự động kéo Lịch mới nhất từ Cloud về khi mở trình duyệt khác
+  async function pullScheduleFromCloud() {
+    try {
+      const res = await fetch(`${DB_BASE}/teaching_schedule.json`);
+      if (res.ok) {
+        const cloudObj = await res.json();
+        if (cloudObj && cloudObj.data) {
+          const currentLocal = localStorage.getItem(SCHEDULE_KEY);
+          if (currentLocal !== cloudObj.data) {
+            originalSetItem(SCHEDULE_KEY, cloudObj.data);
+            console.log('✅ Đã tải Lịch báo giảng mới nhất từ Firebase về thiết bị này!');
+            // Nếu người dùng đang đứng ở màn hình Lịch báo giảng thì tự làm mới để cập nhật
+            if (window.location.hash.includes('schedule') || document.querySelector('h1')?.innerText.includes('Lịch báo giảng')) {
+              window.location.reload();
             }
           }
+        }
+      }
+    } catch (err) {
+      console.warn('Không thể kéo lịch từ Firebase:', err);
+    }
+  }
 
-          pullScheduleFromCloud();
-        })();
+  // Tải dữ liệu ngay khi mở web
+  pullScheduleFromCloud();
+})();
 
         // 8. Khởi tạo và gắn sự kiện Đăng nhập & Phân quyền (Khôi phục hoàn chỉnh)
         function initAppLockEvents() {
