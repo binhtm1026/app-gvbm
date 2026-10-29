@@ -1092,247 +1092,76 @@
         }, true);
 
         // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
-// =========================================================================
-    // =========================================================================
-        // CAN THIỆP XUẤT FILE EXCEL: XUẤT ĐỦ 100% HỌC SINH CỦA LỚP & ĐÚNG ĐIỂM SỐ
-        // =========================================================================
-        (function patchExcelExportFullClass() {
+        function initAppLockEvents() {
+          const passInput = document.getElementById('lock-pass');
+          const btn = document.getElementById('lock-btn');
+          const tAdmin = document.getElementById('tab-admin');
+          const tGuest = document.getElementById('tab-guest');
+
+          if (tAdmin) {
+            tAdmin.onclick = function() { window.switchRole('admin'); };
+          }
+          if (tGuest) {
+            tGuest.onclick = function() { window.switchRole('guest'); };
+          }
+          if (btn) {
+            btn.onclick = checkPass;
+          }
+          if (passInput) {
+            passInput.onkeypress = function(e) {
+              if (e.key === 'Enter') checkPass();
+            };
+            setTimeout(() => passInput.focus(), 200);
+          }
+
+          const savedRole = sessionStorage.getItem('user_access_role');
+          if (savedRole) {
+            applyRole(savedRole);
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          window.addEventListener('DOMContentLoaded', initAppLockEvents);
+        } else {
+          initAppLockEvents();
+        }
+
+        // Tự động sắp xếp lại LocalStorage khi vừa vào trang
+        try {
           const sampleCodes = ['HS1201', 'HS1202', 'HS1203', 'HS1204', 'HS1205', 'HS1206', 'HS1207', 'HS1208', 'HS1209', 'HS1210'];
-
-          // Hàm lấy danh sách học sinh sạch và đầy đủ của lớp hiện tại
-          function getCurrentClassStudents() {
-            try {
-              let currentClassName = '';
-              const allTags = Array.from(document.querySelectorAll('button, span, div, select'));
-              for (let el of allTags) {
-                const txt = (el.innerText || '').trim();
-                if (/^Lớp\s+[0-9]/i.test(txt) || /^[0-9]+[A-Za-z0-9]/.test(txt)) {
-                  if (el.className.includes('bg-') || el.closest('.active') || el.tagName === 'SELECT') {
-                    currentClassName = txt.replace('Lớp', '').trim();
-                    break;
-                  }
-                }
-              }
-
-              const raw = localStorage.getItem('co_thuy_ai_students_v2') || localStorage.getItem('thay_binh_ai_students_v2');
-              if (!raw) return [];
+          ['co_thuy_ai_students_v2', 'thay_binh_ai_students_v2'].forEach(k => {
+            const raw = localStorage.getItem(k);
+            if (raw) {
               let list = JSON.parse(raw);
-              if (!Array.isArray(list)) return [];
-
-              list = list.filter(st => {
-                const code = (st.studentCode || st.code || '').toString();
-                const cId = (st.classId || '').toString();
-                return !st.isSample && !sampleCodes.includes(code) && !code.startsWith('HS12') && !cId.includes('12');
-              });
-
-              if (currentClassName) {
-                const classMatched = list.filter(st => 
-                  (st.classId && st.classId.includes(currentClassName)) || 
-                  (st.className && st.className.includes(currentClassName))
-                );
-                if (classMatched.length > 0) list = classMatched;
+              if (Array.isArray(list) && list.length > 0) {
+                list = list.filter(st => {
+                  const code = (st.studentCode || st.code || '').toString();
+                  const cId = (st.classId || '').toString();
+                  return !st.isSample && !sampleCodes.includes(code) && !code.startsWith('HS12') && !cId.includes('12');
+                });
+                const splitName = (fullName) => {
+                  const parts = (fullName || '').trim().split(/\s+/);
+                  const firstName = parts.length > 0 ? parts[parts.length - 1] : '';
+                  const lastName = parts.slice(0, -1).join(' ');
+                  return { firstName, lastName };
+                };
+                list.sort((a, b) => {
+                  if (a.classId && b.classId && a.classId !== b.classId) return a.classId.localeCompare(b.classId, 'vi');
+                  const nameA = splitName(a.fullName || a.name || '');
+                  const nameB = splitName(b.fullName || b.name || '');
+                  const cmpFirst = nameA.firstName.localeCompare(nameB.firstName, 'vi', { sensitivity: 'base' });
+                  if (cmpFirst !== 0) return cmpFirst;
+                  const cmpLast = nameA.lastName.localeCompare(nameB.lastName, 'vi', { sensitivity: 'base' });
+                  if (cmpLast !== 0) return cmpLast;
+                  return (a.studentCode || '').toString().localeCompare((b.studentCode || '').toString(), 'vi', { numeric: true });
+                });
+                localStorage.setItem(k, JSON.stringify(list));
               }
-
-              const splitName = (fullName) => {
-                const parts = (fullName || '').trim().split(/\s+/);
-                const firstName = parts.length > 0 ? parts[parts.length - 1] : '';
-                const lastName = parts.slice(0, -1).join(' ');
-                return { firstName, lastName };
-              };
-
-              list.sort((a, b) => {
-                const nameA = splitName(a.fullName || a.name || '');
-                const nameB = splitName(b.fullName || b.name || '');
-                const cmpFirst = nameA.firstName.localeCompare(nameB.firstName, 'vi', { sensitivity: 'base' });
-                if (cmpFirst !== 0) return cmpFirst;
-                const cmpLast = nameA.lastName.localeCompare(nameB.lastName, 'vi', { sensitivity: 'base' });
-                if (cmpLast !== 0) return cmpLast;
-                return (a.studentCode || '').toString().localeCompare((b.studentCode || '').toString(), 'vi', { numeric: true });
-              });
-
-              return list;
-            } catch (e) {
-              return [];
             }
-          }
+          });
+        } catch(e) {}
 
-          const hookXLSX = () => {
-            if (window.XLSX && !window.XLSX._patchedFullClass) {
-              window.XLSX._patchedFullClass = true;
-              const originalWriteFile = window.XLSX.writeFile;
-
-              window.XLSX.writeFile = function(workbook, filename, opts) {
-                try {
-                  const cleanStudents = getCurrentClassStudents();
-                  if (cleanStudents.length > 0 && workbook && workbook.Sheets) {
-                    const firstSheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[firstSheetName];
-
-                    if (sheet) {
-                      const sheetData = window.XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                      
-                      if (sheetData.length > 1) {
-                        const headers = sheetData[0];
-                        const isScoreSheet = headers.some(h => (h || '').toString().toLowerCase().includes('tx') || (h || '').toString().toLowerCase().includes('đánh giá') || (h || '').toString().toLowerCase().includes('điểm'));
-                        
-                        let newSheetData = [headers];
-
-                        cleanStudents.forEach((st, idx) => {
-                          let row = [];
-                          headers.forEach((h) => {
-                            const hLower = (h || '').toString().toLowerCase();
-                            if (hLower.includes('stt')) {
-                              row.push(idx + 1);
-                            } else if (hLower.includes('mã')) {
-                              row.push(st.studentCode || st.code || '');
-                            } else if (hLower.includes('họ') || hLower.includes('tên')) {
-                              row.push(st.fullName || st.name || '');
-                            } else if (hLower.includes('lớp')) {
-                              row.push(st.className || st.classId || '');
-                            } else if (isScoreSheet && st.scores && Array.isArray(st.scores)) {
-                              if (hLower.includes('tx1')) row.push(st.scores[0] ?? '');
-                              else if (hLower.includes('tx2')) row.push(st.scores[1] ?? '');
-                              else if (hLower.includes('tx3')) row.push(st.scores[2] ?? '');
-                              else if (hLower.includes('tx4')) row.push(st.scores[3] ?? '');
-                              else if (hLower.includes('tx5')) row.push(st.scores[4] ?? '');
-                              else if (hLower.includes('giữa') || hLower.includes('dggk')) row.push(st.scores[5] ?? '');
-                              else if (hLower.includes('cuối') || hLower.includes('dgck')) row.push(st.scores[6] ?? '');
-                              else row.push('');
-                            } else {
-                              row.push('');
-                            }
-                          });
-                          newSheetData.push(row);
-                        });
-
-                        workbook.Sheets[firstSheetName] = window.XLSX.utils.aoa_to_sheet(newSheetData);
-                      }
-                    }
-                  }
-                } catch (err) {
-                  console.warn("Lỗi chuẩn hóa file Excel:", err);
-                }
-                return originalWriteFile.apply(this, arguments);
-              };
-            }
-          };
-
-          setInterval(hookXLSX, 500);
-        })();
-        function initAppLockEvents() {
-// =========================================================================
-        // CAN THIỆP TRỰC TIẾP LỆNH TẢI FILE EXCEL CỦA TRÌNH DUYỆT (TRIỆT TIÊU MẪU 12)
-        // =========================================================================
-        (function interceptBrowserFileDownloads() {
-          const sampleCodes = ['HS1201', 'HS1202', 'HS1203', 'HS1204', 'HS1205', 'HS1206', 'HS1207', 'HS1208', 'HS1209', 'HS1210'];
-
-          // Luôn dọn sạch LocalStorage mỗi khi mở trang
-          try {
-            ['co_thuy_ai_students_v2', 'thay_binh_ai_students_v2'].forEach(k => {
-              const raw = localStorage.getItem(k);
-              if (raw) {
-                let list = JSON.parse(raw);
-                if (Array.isArray(list) && list.length > 0) {
-                  // Lọc bỏ học sinh mẫu lớp 12
-                  list = list.filter(st => {
-                    const code = (st.studentCode || st.code || '').toString();
-                    const cId = (st.classId || '').toString();
-                    return !st.isSample && !sampleCodes.includes(code) && !code.startsWith('HS12') && !cId.includes('12');
-                  });
-
-                  // Sắp xếp Alphabet theo Tên A-Z
-                  const splitName = (fullName) => {
-                    const parts = (fullName || '').trim().split(/\s+/);
-                    const firstName = parts.length > 0 ? parts[parts.length - 1] : '';
-                    const lastName = parts.slice(0, -1).join(' ');
-                    return { firstName, lastName };
-                  };
-
-                  list.sort((a, b) => {
-                    if (a.classId && b.classId && a.classId !== b.classId) {
-                      return a.classId.localeCompare(b.classId, 'vi');
-                    }
-                    const nameA = splitName(a.fullName || a.name || '');
-                    const nameB = splitName(b.fullName || b.name || '');
-                    const cmpFirst = nameA.firstName.localeCompare(nameB.firstName, 'vi', { sensitivity: 'base' });
-                    if (cmpFirst !== 0) return cmpFirst;
-                    const cmpLast = nameA.lastName.localeCompare(nameB.lastName, 'vi', { sensitivity: 'base' });
-                    if (cmpLast !== 0) return cmpLast;
-                    return (a.studentCode || '').toString().localeCompare((b.studentCode || '').toString(), 'vi', { numeric: true });
-                  });
-
-                  localStorage.setItem(k, JSON.stringify(list));
-                }
-              }
-            });
-          } catch(e) {}
-        })();
-
-        function initAppLockEvents() {
-          const passInput = document.getElementById('lock-pass');
-          const btn = document.getElementById('lock-btn');
-          const tAdmin = document.getElementById('tab-admin');
-          const tGuest = document.getElementById('tab-guest');
-
-          if (tAdmin) tAdmin.onclick = () => window.switchRole('admin');
-          if (tGuest) tGuest.onclick = () => window.switchRole('guest');
-          if (btn) btn.onclick = checkPass;
-          if (passInput) {
-            passInput.onkeypress = (e) => {
-              if (e.key === 'Enter') checkPass();
-            };
-            // Đảm bảo ô nhập luôn sẵn sàng gõ
-            setTimeout(() => passInput.focus(), 200);
-          }
-
-          const savedRole = sessionStorage.getItem('user_access_role');
-          if (savedRole) {
-            applyRole(savedRole);
-          }
-        }
-
-        if (document.readyState === 'loading') {
-          window.addEventListener('DOMContentLoaded', initAppLockEvents);
-        } else {
-          initAppLockEvents();
-        }
-
-        // Dùng MutationObserver thông minh: chỉ quét đổi tab khi đã vào bên trong web
-        const observer = new MutationObserver(() => {
-          injectTeacherCard();
-          renameAllExamTabs();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-      })();
-          const passInput = document.getElementById('lock-pass');
-          const btn = document.getElementById('lock-btn');
-          const tAdmin = document.getElementById('tab-admin');
-          const tGuest = document.getElementById('tab-guest');
-
-          if (tAdmin) tAdmin.onclick = () => window.switchRole('admin');
-          if (tGuest) tGuest.onclick = () => window.switchRole('guest');
-          if (btn) btn.onclick = checkPass;
-          if (passInput) {
-            passInput.onkeypress = (e) => {
-              if (e.key === 'Enter') checkPass();
-            };
-            // Đảm bảo ô nhập luôn sẵn sàng gõ
-            setTimeout(() => passInput.focus(), 200);
-          }
-
-          const savedRole = sessionStorage.getItem('user_access_role');
-          if (savedRole) {
-            applyRole(savedRole);
-          }
-        }
-
-        if (document.readyState === 'loading') {
-          window.addEventListener('DOMContentLoaded', initAppLockEvents);
-        } else {
-          initAppLockEvents();
-        }
-
-        // Dùng MutationObserver thông minh: chỉ quét đổi tab khi đã vào bên trong web
+        // Dùng MutationObserver: quét giao diện sau khi đăng nhập thành công
         const observer = new MutationObserver(() => {
           injectTeacherCard();
           renameAllExamTabs();
@@ -1340,7 +1169,6 @@
         observer.observe(document.body, { childList: true, subtree: true });
       })();
     </script>
-    <!-- ========================================================================================== -->
 <script>
   (function purgeGrade12Completely() {
     const targets = ['12A1', '12A2', '12A3', 'Lớp 12A1', 'Lớp 12A2', 'Lớp 12A3'];
