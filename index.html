@@ -1172,15 +1172,10 @@
           setInterval(runSort, 300);
         })();
         
-// 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
-   // =========================================================================
-      // =========================================================================
-        // TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD FIREBASE VÀ TRÌNH DUYỆT MỚI
-        // =========================================================================
+// 7. TỰ ĐỘNG ĐỒNG BỘ LỊCH BÁO GIẢNG LÊN CLOUD FIREBASE VÀ TRÌNH DUYỆT MỚI
         (function autoSyncScheduleWithFirebase() {
           const FIREBASE_URL = 'https://app-gvbm-default-rtdb.firebaseio.com/teaching_schedule.json';
 
-          // 1. Quét tìm tất cả các mục lưu lịch báo giảng trong LocalStorage
           function getFullSchedule() {
             let data = {};
             for (let i = 0; i < localStorage.length; i++) {
@@ -1192,7 +1187,6 @@
             return data;
           }
 
-          // 2. Tự động lưu lên Firebase mỗi khi thầy thay đổi tiết dạy trên giao diện
           async function pushScheduleToCloud() {
             try {
               const data = getFullSchedule();
@@ -1209,15 +1203,13 @@
             }
           }
 
-          // Lắng nghe khi thầy đổi môn, đổi lớp hoặc chỉnh sửa trên bảng lịch
           document.addEventListener('change', function(e) {
             const target = e.target;
-            if (target.closest('.schedule') || target.tagName === 'SELECT' || target.tagName === 'INPUT') {
+            if (target && (target.closest('.schedule') || target.tagName === 'SELECT' || target.tagName === 'INPUT')) {
               setTimeout(pushScheduleToCloud, 500);
             }
           });
 
-          // Cũng tự động đẩy lên khi thầy bấm nút Lưu / Đồng bộ
           document.addEventListener('click', function(e) {
             const btn = e.target.closest('button, a');
             if (btn && (btn.innerText || '').toLowerCase().includes('đồng bộ')) {
@@ -1225,7 +1217,6 @@
             }
           });
 
-          // 3. Tự động kéo lịch từ Firebase về khi mở trang web ở trình duyệt mới
           async function pullScheduleFromCloud() {
             try {
               const res = await fetch(FIREBASE_URL);
@@ -1239,7 +1230,6 @@
                       hasNew = true;
                     }
                   }
-                  // Nếu phát hiện có lịch mới từ đám mây kéo về thì cập nhật giao diện
                   if (hasNew) {
                     console.log('✅ Đã tải Lịch báo giảng mới nhất từ Firebase về máy!');
                   }
@@ -1250,136 +1240,143 @@
             }
           }
 
-          // Tự động tải về ngay khi mở web
           pullScheduleFromCloud();
         })();
 
-    // 2. Tự động bóc tách và xóa sạch DOM của 3 lớp 12 ngay khi bảng popup vừa bật lên
-    function clearPopups() {
-      // Tìm tất cả các thẻ chữ, button, div chứa 12A1, 12A2, 12A3
-      const elements = Array.from(document.querySelectorAll('div, button, li, p, span'));
-      elements.forEach(el => {
-        // Chỉ xử lý các thẻ con trực tiếp chứa đúng tên lớp để không xóa nhầm container lớn
-        const txt = (el.innerText || '').trim();
-        if (targets.some(t => txt === t || txt === `Lớp ${t}`)) {
-          // Ẩn và gỡ bỏ phần tử đó khỏi danh sách chọn
-          el.style.setProperty('display', 'none', 'important');
-          if (el.parentNode && el.children.length <= 1) {
-            el.remove();
+        // 8. Khởi tạo và gắn sự kiện Đăng nhập & Phân quyền (Khôi phục hoàn chỉnh)
+        function initAppLockEvents() {
+          const passInput = document.getElementById('lock-pass');
+          const btn = document.getElementById('lock-btn');
+          const tAdmin = document.getElementById('tab-admin');
+          const tGuest = document.getElementById('tab-guest');
+
+          if (tAdmin) {
+            tAdmin.onclick = function() { window.switchRole('admin'); };
+          }
+          if (tGuest) {
+            tGuest.onclick = function() { window.switchRole('guest'); };
+          }
+          if (btn) {
+            btn.onclick = checkPass;
+          }
+          if (passInput) {
+            passInput.onkeypress = function(e) {
+              if (e.key === 'Enter') checkPass();
+            };
+            setTimeout(() => passInput.focus(), 200);
+          }
+
+          const savedRole = sessionStorage.getItem('user_access_role');
+          if (savedRole) {
+            applyRole(savedRole);
           }
         }
-      });
-    }
 
-    // Lắng nghe liên tục khi thầy bấm vào ô "Chọn lớp"
-    window.addEventListener('click', () => {
-      setTimeout(clearPopups, 10);
-      setTimeout(clearPopups, 50);
-      setTimeout(clearPopups, 150);
-    }, true);
-
-    const obs = new MutationObserver(clearPopups);
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-  })();
-// =========================================================================
-    // TÍNH NĂNG "TIẾT TRỐNG" TINH GỌN, CHUẨN XÁC, KHÔNG VỠ BỐ CỤC
-    // =========================================================================
-    function injectCleanEmptyPeriodButtons() {
-      // 1. Chỉ tìm đúng các thẻ con là Card Tiết học (chứa nút Tiết 1 -> Tiết 8)
-      const allButtons = Array.from(document.querySelectorAll('button, div'));
-      const periodBadges = allButtons.filter(el => {
-        const txt = (el.innerText || '').trim();
-        return /^Tiết\s+[1-8]$/.test(txt);
-      });
-
-      periodBadges.forEach(badge => {
-        // Tìm card chứa tiết học (khung viền bo tròn)
-        let card = badge.closest('div.relative') || badge.parentElement;
-        while (card && card.parentElement && !card.innerText.includes('Ghi tên bài dạy')) {
-          card = card.parentElement;
+        if (document.readyState === 'loading') {
+          window.addEventListener('DOMContentLoaded', initAppLockEvents);
+        } else {
+          initAppLockEvents();
         }
 
-        if (!card || card.querySelector('.btn-clean-empty-period')) return;
+        // Tự động quét giao diện sau khi vào trong app
+        const observer = new MutationObserver(() => {
+          injectTeacherCard();
+          renameAllExamTabs();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      })();
 
-        // Đảm bảo card có position relative để đặt icon nút ở góc trên phải
-        card.style.position = 'relative';
-
-        // 2. Tạo nút "✕ Trống" nhỏ gọn, tinh tế
-        const emptyBtn = document.createElement('button');
-        emptyBtn.type = 'button';
-        emptyBtn.className = 'btn-clean-empty-period';
-        emptyBtn.innerHTML = '✕ Trống';
-        emptyBtn.title = 'Xóa môn & lớp để làm tiết trống';
-        emptyBtn.style.cssText = `
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          z-index: 20;
-          font-size: 11px;
-          font-weight: 600;
-          padding: 3px 8px;
-          border-radius: 6px;
-          background: rgba(239, 68, 68, 0.12);
-          color: #f87171;
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          cursor: pointer;
-          transition: all 0.2s ease;
-          opacity: 0.6;
-        `;
-
-        emptyBtn.onmouseenter = () => {
-          emptyBtn.style.opacity = '1';
-          emptyBtn.style.background = '#dc2626';
-          emptyBtn.style.color = '#ffffff';
-          emptyBtn.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.4)';
-        };
-
-        emptyBtn.onmouseleave = () => {
-          emptyBtn.style.opacity = '0.6';
-          emptyBtn.style.background = 'rgba(239, 68, 68, 0.12)';
-          emptyBtn.style.color = '#f87171';
-          emptyBtn.style.boxShadow = 'none';
-        };
-
-        // 3. Xử lý khi nhấn nút Trống
-        emptyBtn.onclick = (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-
-          // Kích hoạt nút "Bỏ chọn lớp"
-          const classTrigger = Array.from(card.querySelectorAll('button, div')).find(el => {
-            const t = (el.innerText || '').trim();
-            return t.includes('Lớp') || t.includes('+ Chọn lớp');
+      // Tính năng Tiết trống tinh gọn
+      (function injectCleanEmptyPeriodButtons() {
+        function runInject() {
+          const allButtons = Array.from(document.querySelectorAll('button, div'));
+          const periodBadges = allButtons.filter(el => {
+            const txt = (el.innerText || '').trim();
+            return /^Tiết\s+[1-8]$/.test(txt);
           });
 
-          if (classTrigger) {
-            classTrigger.click();
-            setTimeout(() => {
-              const clearBtn = Array.from(document.querySelectorAll('button, div, span')).find(item => 
-                (item.innerText || '').trim() === 'Bỏ chọn lớp'
-              );
-              if (clearBtn) clearBtn.click();
-            }, 40);
-          }
+          periodBadges.forEach(badge => {
+            let card = badge.closest('div.relative') || badge.parentElement;
+            while (card && card.parentElement && !card.innerText.includes('Ghi tên bài dạy')) {
+              card = card.parentElement;
+            }
 
-          // Xóa tên bài dạy nếu có input
-          const noteInput = card.querySelector('input');
-          if (noteInput) {
-            noteInput.value = '';
-            noteInput.dispatchEvent(new Event('input', { bubbles: true }));
-          }
+            if (!card || card.querySelector('.btn-clean-empty-period')) return;
 
-          // Hiệu ứng tiết trống tinh tế: làm mờ nhẹ card
-          card.style.transition = 'all 0.3s ease';
-          card.style.opacity = '0.55';
-        };
+            card.style.position = 'relative';
 
-        card.appendChild(emptyBtn);
-      });
-    }
+            const emptyBtn = document.createElement('button');
+            emptyBtn.type = 'button';
+            emptyBtn.className = 'btn-clean-empty-period';
+            emptyBtn.innerHTML = '✕ Trống';
+            emptyBtn.title = 'Xóa môn & lớp để làm tiết trống';
+            emptyBtn.style.cssText = `
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              z-index: 20;
+              font-size: 11px;
+              font-weight: 600;
+              padding: 3px 8px;
+              border-radius: 6px;
+              background: rgba(239, 68, 68, 0.12);
+              color: #f87171;
+              border: 1px solid rgba(239, 68, 68, 0.3);
+              cursor: pointer;
+              transition: all 0.2s ease;
+              opacity: 0.6;
+            `;
 
-    // Quét định kỳ nhẹ nhàng, không gây giật lag hay vỡ bố cục
-    setInterval(injectCleanEmptyPeriodButtons, 500);</script>    
+            emptyBtn.onmouseenter = () => {
+              emptyBtn.style.opacity = '1';
+              emptyBtn.style.background = '#dc2626';
+              emptyBtn.style.color = '#ffffff';
+              emptyBtn.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.4)';
+            };
+
+            emptyBtn.onmouseleave = () => {
+              emptyBtn.style.opacity = '0.6';
+              emptyBtn.style.background = 'rgba(239, 68, 68, 0.12)';
+              emptyBtn.style.color = '#f87171';
+              emptyBtn.style.boxShadow = 'none';
+            };
+
+            emptyBtn.onclick = (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+
+              const classTrigger = Array.from(card.querySelectorAll('button, div')).find(el => {
+                const t = (el.innerText || '').trim();
+                return t.includes('Lớp') || t.includes('+ Chọn lớp');
+              });
+
+              if (classTrigger) {
+                classTrigger.click();
+                setTimeout(() => {
+                  const clearBtn = Array.from(document.querySelectorAll('button, div, span')).find(item => 
+                    (item.innerText || '').trim() === 'Bỏ chọn lớp'
+                  );
+                  if (clearBtn) clearBtn.click();
+                }, 40);
+              }
+
+              const noteInput = card.querySelector('input');
+              if (noteInput) {
+                noteInput.value = '';
+                noteInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+
+              card.style.transition = 'all 0.3s ease';
+              card.style.opacity = '0.55';
+            };
+
+            card.appendChild(emptyBtn);
+          });
+        }
+
+        setInterval(runInject, 500);
+      })();
+    </script>
 <style>
   /* Ẩn bằng thuộc tính màu sắc và đường viền đặc trưng của nút tím */
   button[class*="purple"],
