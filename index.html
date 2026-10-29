@@ -648,15 +648,37 @@
           if (passInput) passInput.focus();
         };
 
-        // 2. Hàm áp dụng quyền vào trang web (Bảo mật tối đa cho Khách thăm)
+        // 2. Hàm áp dụng quyền vào trang web (Quản lý luồng linh hoạt giữa Admin & Khách)
+        let guestIntervalId = null;
+
+        // Hàm khôi phục lại toàn bộ giao diện cho Admin
+        function restoreAdminInterface() {
+          if (guestIntervalId) {
+            clearInterval(guestIntervalId);
+            guestIntervalId = null;
+          }
+          document.body.classList.remove('guest-mode');
+
+          // Gỡ bỏ class và thuộc tính ẩn của chế độ khách
+          const hiddenElements = document.querySelectorAll('.guest-hide-strict, [style*="display: none"]');
+          hiddenElements.forEach(el => {
+            if (el.id === 'app-lock-overlay' || el.id === 'lock-err') return;
+            el.classList.remove('guest-hide-strict');
+            el.style.removeProperty('display');
+          });
+        }
+
         function applyRole(role) {
           const overlay = document.getElementById('app-lock-overlay');
           if (overlay) overlay.style.setProperty('display', 'none', 'important');
 
-          if (role === 'guest') {
+          if (role === 'admin') {
+            // Khi vào quyền Admin: dọn sạch các hạn chế của khách ngay lập tức
+            restoreAdminInterface();
+          } else if (role === 'guest') {
             document.body.classList.add('guest-mode');
 
-            // Nếu màn hình đang dừng ở tab "Cài đặt và sao lưu", tự chuyển về tab "Tổng quan"
+            // Nếu màn hình đang dừng ở tab "Cài đặt và sao lưu", tự chuyển về "Tổng quan"
             setTimeout(() => {
               const currentHeader = document.querySelector('h1, h2, header');
               if (currentHeader && currentHeader.innerText.includes('Cài đặt')) {
@@ -667,8 +689,17 @@
               }
             }, 100);
 
-            // Quét ẩn nút Cài đặt & Sao lưu trên Menu và các nút sửa đổi dữ liệu
-            setInterval(() => {
+            // Dừng interval cũ nếu có trước khi tạo mới
+            if (guestIntervalId) clearInterval(guestIntervalId);
+
+            guestIntervalId = setInterval(() => {
+              // Nếu không còn ở guest-mode thì lập tức tự hủy
+              if (!document.body.classList.contains('guest-mode')) {
+                clearInterval(guestIntervalId);
+                guestIntervalId = null;
+                return;
+              }
+
               const allElements = document.querySelectorAll('button, a, div[role="button"], li');
               allElements.forEach(el => {
                 if (el.id === 'btn-app-logout') return;
@@ -676,7 +707,7 @@
                 const txt = (el.innerText || '').trim();
                 const txtLower = txt.toLowerCase();
 
-                // 1. Ẩn chính xác nút tab "Cài đặt và sao lưu" cùng các nút dưới sidebar
+                // 1. Ẩn nút Cài đặt & Sao lưu cùng các nút cấu hình dưới sidebar
                 if (
                   txt.includes('Cài đặt và sao lưu') ||
                   txt === 'Cài đặt' ||
@@ -689,7 +720,7 @@
                   el.style.setProperty('display', 'none', 'important');
                 }
 
-                // 2. Ẩn các nút thao tác chỉnh sửa dữ liệu của học sinh
+                // 2. Ẩn các nút hành động chỉnh sửa dữ liệu
                 const dangerousKeywords = ['thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 'ghi nhận', 'kết nối', 'reset', 'đồng bộ'];
                 const isNavMenu = el.closest('nav') || el.closest('aside') || el.className.includes('nav');
                 if (!isNavMenu && dangerousKeywords.some(kw => txtLower === kw || txtLower.includes(kw))) {
@@ -700,14 +731,15 @@
           }
         }
 
-        // 3. Hàm đăng xuất
+        // 3. Hàm đăng xuất (Hủy triệt để trạng thái Khách thăm)
         function handleLogout() {
           sessionStorage.removeItem('user_access_role');
+          restoreAdminInterface(); // Hủy bộ đếm và mở khóa lại toàn bộ nút
+
           const overlay = document.getElementById('app-lock-overlay');
           const passInput = document.getElementById('lock-pass');
           const err = document.getElementById('lock-err');
 
-          document.body.classList.remove('guest-mode');
           if (err) err.style.display = 'none';
           if (passInput) passInput.value = '';
           if (overlay) overlay.style.setProperty('display', 'flex', 'important');
