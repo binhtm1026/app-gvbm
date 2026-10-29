@@ -1092,6 +1092,84 @@
         }, true);
 
         // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
+// =========================================================================
+        // TỰ ĐỘNG CHUẨN HÓA FILE MẪU EXCEL: LẤY ĐỦ DANH SÁCH LỚP & LOẠI BỎ HỌC SINH LỚP 12 MẪU
+        // =========================================================================
+        (function interceptTemplateExport() {
+          const sampleCodes = ['HS1201', 'HS1202', 'HS1203', 'HS1204', 'HS1205', 'HS1206', 'HS1207', 'HS1208', 'HS1209', 'HS1210'];
+
+          // Hàm lấy danh sách học sinh sạch của lớp đang mở
+          function getCleanStudentsOfCurrentClass() {
+            try {
+              // 1. Lấy lớp đang được chọn hiển thị trên giao diện
+              let selectedClassId = '';
+              const classTriggers = document.querySelectorAll('button, select, div');
+              classTriggers.forEach(el => {
+                const txt = (el.innerText || '').trim();
+                if (txt.startsWith('Lớp ')) {
+                  selectedClassId = txt;
+                }
+              });
+
+              // 2. Lấy dữ liệu học sinh từ LocalStorage
+              const raw = localStorage.getItem('co_thuy_ai_students_v2') || localStorage.getItem('thay_binh_ai_students_v2');
+              if (!raw) return [];
+
+              let list = JSON.parse(raw);
+              if (!Array.isArray(list)) return [];
+
+              // Lọc bỏ sạch sẽ các học sinh mẫu lớp 12
+              list = list.filter(st => {
+                const code = st.studentCode || st.code || '';
+                const cId = st.classId || '';
+                return !st.isSample && !sampleCodes.includes(code) && !cId.includes('12') && !code.startsWith('HS12');
+              });
+
+              // Nếu đang chọn lớp cụ thể thì ưu tiên lọc theo lớp đó
+              if (selectedClassId) {
+                const filtered = list.filter(st => st.classId === selectedClassId || st.className === selectedClassId);
+                if (filtered.length > 0) return filtered;
+              }
+
+              return list;
+            } catch (e) {
+              return [];
+            }
+          }
+
+          // Lắng nghe khi bấm nút tải/xuất file mẫu
+          window.addEventListener('click', (e) => {
+            const btn = e.target.closest('button, a');
+            if (!btn) return;
+
+            const text = (btn.innerText || '').toLowerCase();
+            const isExportTemplate = text.includes('tải file mẫu') || 
+                                     text.includes('xuất file mẫu') || 
+                                     text.includes('file excel mẫu') || 
+                                     text.includes('mẫu danh sách');
+
+            if (isExportTemplate) {
+              // Quét sạch lại bộ nhớ LocalStorage để chắc chắn không còn sót học sinh mẫu 12
+              ['co_thuy_ai_students_v2', 'thay_binh_ai_students_v2'].forEach(k => {
+                const raw = localStorage.getItem(k);
+                if (raw) {
+                  try {
+                    let data = JSON.parse(raw);
+                    if (Array.isArray(data)) {
+                      const cleanData = data.filter(st => {
+                        const code = st.studentCode || st.code || '';
+                        const cId = st.classId || '';
+                        return !st.isSample && !sampleCodes.includes(code) && !cId.includes('12') && !code.startsWith('HS12');
+                      });
+                      localStorage.setItem(k, JSON.stringify(cleanData));
+                    }
+                  } catch(err) {}
+                }
+              });
+            }
+          }, true);
+        })();
+
       // =========================================================================
         // TỰ ĐỘNG SẮP XẾP DANH SÁCH HỌC SINH VÀ NHẬP ĐIỂM CHUẨN ALPHABET TIẾNG VIỆT
         // =========================================================================
