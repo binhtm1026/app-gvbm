@@ -745,30 +745,43 @@
           }
         }
 
-        // 5. Chèn thẻ thông tin tác giả Thầy Bình
+        // 5. Chèn thẻ thông tin tác giả & Nút đăng xuất (Hỗ trợ cả Máy tính và Điện thoại)
         function injectTeacherCard() {
-          if (document.getElementById('custom-teacher-wrapper')) return;
+          const lockOverlay = document.getElementById('app-lock-overlay');
+          if (lockOverlay && lockOverlay.style.display !== 'none') return;
 
+          // Tìm tất cả nút "Giao diện & Phối màu" (có thể có ở menu desktop và menu mobile)
           const allButtons = Array.from(document.querySelectorAll('button'));
-          const themeBtn = allButtons.find(b => (b.innerText || '').includes('Giao diện & Phối màu'));
+          const themeBtns = allButtons.filter(b => (b.innerText || '').includes('Giao diện & Phối màu'));
 
-          if (themeBtn) {
+          themeBtns.forEach((themeBtn, idx) => {
+            // Tìm container chứa khối cài đặt phía dưới
             let parentBox = themeBtn;
-            while (parentBox.parentElement && parentBox.parentElement.querySelectorAll('button').length <= 4) {
+            while (parentBox.parentElement && parentBox.parentElement.querySelectorAll('button').length <= 5) {
               parentBox = parentBox.parentElement;
             }
 
-            const tpl = document.getElementById('tpl-teacher-section');
-            if (tpl && parentBox && parentBox.parentNode) {
-              const clone = tpl.content.cloneNode(true);
-              parentBox.parentNode.insertBefore(clone, parentBox);
+            if (!parentBox || !parentBox.parentNode) return;
 
-              const logoutBtn = document.getElementById('btn-app-logout');
+            // Kiểm tra xem vị trí menu này đã có thẻ thông tin chưa
+            const wrapperId = 'custom-teacher-wrapper-' + idx;
+            if (parentBox.parentNode.querySelector('#' + wrapperId)) return;
+
+            const tpl = document.getElementById('tpl-teacher-section');
+            if (tpl) {
+              const clone = tpl.content.cloneNode(true);
+              const wrapper = clone.querySelector('#custom-teacher-wrapper');
+              if (wrapper) wrapper.id = wrapperId;
+
+              // Gán sự kiện click đăng xuất
+              const logoutBtn = clone.querySelector('#btn-app-logout');
               if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
+                logoutBtn.onclick = handleLogout;
               }
+
+              parentBox.parentNode.insertBefore(clone, parentBox);
             }
-          }
+          });
         }
 
         // 6. NHÚNG LMS "LUYỆN TẬP VÀ KIỂM TRA" HOẠT ĐỘNG HOÀN HẢO TRÊN CẢ ĐIỆN THOẠI & MÁY TÍNH
