@@ -738,10 +738,14 @@
           }
         }
 
-        // 6. Nhúng LMS Luyện tập và kiểm tra (tự động nhận diện cả trên điện thoại)
+        // 6. Nhúng LMS Luyện tập và kiểm tra (an toàn, chỉ chạy khi đã vào màn hình chính)
         const URL_APP_LUYEN_TAP = "https://toanthaybinh-sandy.vercel.app";
 
         function handleCustomExamTab() {
+          // Nếu màn hình khóa vẫn đang hiện thì KHÔNG chạy để tránh đơ ô nhập mật khẩu
+          const lockOverlay = document.getElementById('app-lock-overlay');
+          if (lockOverlay && lockOverlay.style.display !== 'none') return;
+
           const allButtons = Array.from(document.querySelectorAll('button, a, div[role="button"]'));
           const examBtn = allButtons.find(b => {
             const txt = (b.innerText || '').trim();
@@ -749,12 +753,15 @@
           });
 
           if (examBtn) {
-            // Đổi chữ hiển thị
-            const textNodes = Array.from(examBtn.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
-            if (textNodes.length > 0) {
-              textNodes[textNodes.length - 1].textContent = " Luyện tập và kiểm tra";
-            } else {
-              examBtn.innerHTML = examBtn.innerHTML.replace(/Ngân hàng đề thi/g, 'Luyện tập và kiểm tra');
+            // Đổi nhãn nút nếu chưa đổi
+            if (!examBtn.dataset.renamedLms) {
+              examBtn.dataset.renamedLms = "true";
+              const textNodes = Array.from(examBtn.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+              if (textNodes.length > 0) {
+                textNodes[textNodes.length - 1].textContent = " Luyện tập và kiểm tra";
+              } else {
+                examBtn.innerHTML = examBtn.innerHTML.replace(/Ngân hàng đề thi/g, 'Luyện tập và kiểm tra');
+              }
             }
 
             if (!examBtn.dataset.mergedLms) {
@@ -798,7 +805,7 @@
             }
           }
 
-          // Ẩn iframe khi bấm các tab khác
+          // Ẩn iframe khi người dùng bấm các tab khác
           allButtons.forEach(btn => {
             if (btn !== examBtn && !btn.dataset.listenLmsHide) {
               btn.dataset.listenLmsHide = "true";
@@ -810,7 +817,7 @@
           });
         }
 
-        // 7. Khởi tạo và gắn sự kiện click trực tiếp
+        // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
         function initAppLockEvents() {
           const passInput = document.getElementById('lock-pass');
           const btn = document.getElementById('lock-btn');
@@ -824,15 +831,14 @@
             passInput.onkeypress = (e) => {
               if (e.key === 'Enter') checkPass();
             };
+            // Đảm bảo ô nhập luôn sẵn sàng gõ
+            setTimeout(() => passInput.focus(), 200);
           }
 
           const savedRole = sessionStorage.getItem('user_access_role');
           if (savedRole) {
             applyRole(savedRole);
           }
-
-          injectTeacherCard();
-          handleCustomExamTab();
         }
 
         if (document.readyState === 'loading') {
@@ -841,9 +847,7 @@
           initAppLockEvents();
         }
 
-        // Quét liên tục để đổi tên tab ngay khi mở menu trên điện thoại
-        setInterval(handleCustomExamTab, 300);
-
+        // Dùng MutationObserver thông minh: chỉ quét đổi tab khi đã vào bên trong web
         const observer = new MutationObserver(() => {
           injectTeacherCard();
           handleCustomExamTab();
