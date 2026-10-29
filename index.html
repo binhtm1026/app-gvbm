@@ -491,15 +491,7 @@
         border-radius: 10px !important;
       }
 
-/* TRIỆT TIÊU HOÀN TOÀN CÁC LỚP 12A1, 12A2, 12A3 TRONG TOÀN BỘ APP */
-      [class*="DANH SÁCH"] div:has-text("12A1"),
-      [class*="DANH SÁCH"] div:has-text("12A2"),
-      [class*="DANH SÁCH"] div:has-text("12A3"),
-      div:has(> span:contains("12A1")),
-      div:has(> span:contains("12A2")),
-      div:has(> span:contains("12A3")) {
-        display: none !important;
-      }
+
 /* CƯỠNG CHẾ ĐỔI TÊN TAB TRÊN CẢ GIAO DIỆN MOBILE & DESKTOP */
       button:has(svg.lucide-chart-no-axes-column),
       button:has(*:contains("Ngân hàng đề thi")) {
@@ -525,10 +517,7 @@
       }
 
       /* Khi khung LMS hiển thị (flex), các nội dung nền phía sau tạm ẩn để không bị nhá */
-      main.lms-active > div:not(#custom-exam-iframe-container),
-      .flex-1.overflow-y-auto.lms-active > div:not(#custom-exam-iframe-container) {
-        display: none !important;
-      }
+      main.lms-active > div:not(#custom-exam-iframe-container) { display: none; }
     </style>
 
     <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
