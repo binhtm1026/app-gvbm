@@ -507,13 +507,7 @@
         display: inline-block !important;
         color: inherit !important;
       }
-   /* ẨN TRIỆT ĐỂ NỘI DUNG CŨ CỦA TAB NGÂN HÀNG ĐỀ THI TRƯỚC KHI KỊP HIỆN */
-      main:has(#custom-exam-iframe-container) > div:not(#custom-exam-iframe-container),
-      .flex-1.overflow-y-auto:has(#custom-exam-iframe-container) > div:not(#custom-exam-iframe-container) {
-        display: none !important;
-      }
-
-      /* Khung nhúng LMS xuất hiện lập tức không trễ */
+   /* 1. CHỈ ẨN GIAO DIỆN PHÍA DƯỚI KHI KHUNG LMS ĐANG BẬT */
       #custom-exam-iframe-container {
         position: absolute !important;
         top: 0 !important;
@@ -521,6 +515,12 @@
         width: 100% !important;
         height: 100% !important;
         z-index: 50 !important;
+      }
+
+      /* Khi khung LMS hiển thị (flex), các nội dung nền phía sau tạm ẩn để không bị nhá */
+      main.lms-active > div:not(#custom-exam-iframe-container),
+      .flex-1.overflow-y-auto.lms-active > div:not(#custom-exam-iframe-container) {
+        display: none !important;
       }
     </style>
 
