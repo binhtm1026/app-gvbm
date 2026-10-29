@@ -1092,6 +1092,106 @@
         }, true);
 
         // 7. Khởi tạo và gắn sự kiện click trực tiếp (chạy nhẹ nhàng, mượt mà)
+      // =========================================================================
+        // TỰ ĐỘNG SẮP XẾP DANH SÁCH HỌC SINH VÀ NHẬP ĐIỂM CHUẨN ALPHABET TIẾNG VIỆT
+        // =========================================================================
+        (function autoSortStudentTables() {
+          // Hàm tách Tên và Họ lót tiếng Việt chuẩn
+          function splitVietnameseName(fullName) {
+            const parts = (fullName || '').trim().split(/\s+/);
+            const firstName = parts.length > 0 ? parts[parts.length - 1] : '';
+            const lastName = parts.slice(0, -1).join(' ');
+            return { firstName, lastName };
+          }
+
+          function sortTablesOnScreen() {
+            const tables = document.querySelectorAll('table');
+            tables.forEach(table => {
+              const tbody = table.querySelector('tbody');
+              if (!tbody) return;
+
+              const rows = Array.from(tbody.querySelectorAll('tr'));
+              if (rows.length < 2) return;
+
+              // 1. Nhận diện bảng học sinh (tìm cột "Họ và tên", "Học sinh", hoặc "Mã")
+              const headerCells = Array.from(table.querySelectorAll('th, thead td'));
+              let nameColIdx = -1;
+              let codeColIdx = -1;
+
+              headerCells.forEach((th, idx) => {
+                const txt = (th.innerText || '').toLowerCase();
+                if (txt.includes('họ') || txt.includes('tên') || txt.includes('học sinh')) {
+                  if (nameColIdx === -1) nameColIdx = idx;
+                }
+                if (txt.includes('mã') || txt.includes('stt')) {
+                  if (codeColIdx === -1) codeColIdx = idx;
+                }
+              });
+
+              // Nếu không tìm thấy qua header, tự động dò theo nội dung các ô
+              if (nameColIdx === -1) {
+                const sampleRow = rows[0];
+                const cells = Array.from(sampleRow.querySelectorAll('td'));
+                cells.forEach((td, idx) => {
+                  const t = (td.innerText || '').trim();
+                  // Ô chứa họ tên thường có từ 2 từ trở lên và không chứa số thuần
+                  if (t.split(/\s+/).length >= 2 && isNaN(t) && !t.includes('/') && nameColIdx === -1) {
+                    nameColIdx = idx;
+                  }
+                });
+              }
+
+              if (nameColIdx === -1) return;
+
+              // 2. Kiểm tra xem bảng đã được sắp xếp chưa để tránh chạy lại liên tục gây giật
+              let isAlreadySorted = true;
+              for (let i = 0; i < rows.length - 1; i++) {
+                const nameA = splitVietnameseName(rows[i].children[nameColIdx]?.innerText || '');
+                const nameB = splitVietnameseName(rows[i + 1].children[nameColIdx]?.innerText || '');
+                const cmp = nameA.firstName.localeCompare(nameB.firstName, 'vi', { sensitivity: 'base' });
+                if (cmp > 0) {
+                  isAlreadySorted = false;
+                  break;
+                }
+              }
+
+              if (isAlreadySorted) return;
+
+              // 3. Tiến hành sắp xếp lại các hàng <tr> theo Tên A-Z
+              rows.sort((rowA, rowB) => {
+                const valA = rowA.children[nameColIdx]?.innerText || '';
+                const valB = rowB.children[nameColIdx]?.innerText || '';
+                const nameA = splitVietnameseName(valA);
+                const nameB = splitVietnameseName(valB);
+
+                // So sánh Tên trước
+                const cmpFirst = nameA.firstName.localeCompare(nameB.firstName, 'vi', { sensitivity: 'base' });
+                if (cmpFirst !== 0) return cmpFirst;
+
+                // Nếu trùng Tên thì so sánh Họ & Tên lót
+                const cmpLast = nameA.lastName.localeCompare(nameB.lastName, 'vi', { sensitivity: 'base' });
+                if (cmpLast !== 0) return cmpLast;
+
+                // Nếu trùng cả họ tên thì theo Mã số / STT
+                const codeA = codeColIdx !== -1 ? (rowA.children[codeColIdx]?.innerText || '') : '';
+                const codeB = codeColIdx !== -1 ? (rowB.children[codeColIdx]?.innerText || '') : '';
+                return codeA.localeCompare(codeB, 'vi', { numeric: true });
+              });
+
+              // 4. Cập nhật lại số thứ tự (STT) ở cột đầu tiên (nếu có) và đưa lại vào tbody
+              rows.forEach((row, index) => {
+                const firstCell = row.children[0];
+                if (firstCell && /^\d+$/.test(firstCell.innerText.trim())) {
+                  firstCell.innerText = index + 1;
+                }
+                tbody.appendChild(row);
+              });
+            });
+          }
+
+          // Quét và sắp xếp định kỳ mỗi khi thầy chuyển lớp hoặc mở tab Nhập điểm / Quản lý học sinh
+          setInterval(sortTablesOnScreen, 400);
+        })();
         function initAppLockEvents() {
           const passInput = document.getElementById('lock-pass');
           const btn = document.getElementById('lock-btn');
