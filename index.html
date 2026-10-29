@@ -317,18 +317,12 @@
       body.guest-mode button:has(svg.lucide-save) {
         display: none !important;
       }
-/* ẨN NÚT CÀI ĐẶT VÀ SAO LƯU Ở CHẾ ĐỘ KHÁCH THĂM */
+/* ẨN TOÀN BỘ MỤC CÀI ĐẶT & SAO LƯU KHI Ở CHẾ ĐỘ KHÁCH */
+      body.guest-mode .guest-hide-strict,
       body.guest-mode button:has(svg.lucide-settings),
       body.guest-mode button:has(svg.lucide-database),
       body.guest-mode button:has(svg.lucide-download),
-      body.guest-mode button:has(svg.lucide-upload),
-      body.guest-mode button:has(*:contains("Cài đặt")),
-      body.guest-mode button:has(*:contains("Sao lưu")),
-      body.guest-mode button:has(*:contains("Khôi phục")),
-      body.guest-mode button:has(*:contains("Đồng bộ file JSON")),
-      body.guest-mode button:has(*:contains("Giao diện & Phối màu")),
-      body.guest-mode a:has(*:contains("Cài đặt")),
-      body.guest-mode a:has(*:contains("Sao lưu")) {
+      body.guest-mode button:has(svg.lucide-upload) {
         display: none !important;
       }
       /* 3. KHUNG THÔNG TIN TÁC GIẢ & NÚT ĐĂNG XUẤT NẰM Ở MENU TRÁI */
@@ -654,7 +648,7 @@
           if (passInput) passInput.focus();
         };
 
-        // 2. Hàm áp dụng quyền vào trang web
+        // 2. Hàm áp dụng quyền vào trang web (Bảo mật tối đa cho Khách thăm)
         function applyRole(role) {
           const overlay = document.getElementById('app-lock-overlay');
           if (overlay) overlay.style.setProperty('display', 'none', 'important');
@@ -662,18 +656,47 @@
           if (role === 'guest') {
             document.body.classList.add('guest-mode');
 
+            // Nếu màn hình đang dừng ở tab "Cài đặt và sao lưu", tự chuyển về tab "Tổng quan"
+            setTimeout(() => {
+              const currentHeader = document.querySelector('h1, h2, header');
+              if (currentHeader && currentHeader.innerText.includes('Cài đặt')) {
+                const tongQuanBtn = Array.from(document.querySelectorAll('button, a')).find(b => 
+                  (b.innerText || '').trim().includes('Tổng quan')
+                );
+                if (tongQuanBtn) tongQuanBtn.click();
+              }
+            }, 100);
+
+            // Quét ẩn nút Cài đặt & Sao lưu trên Menu và các nút sửa đổi dữ liệu
             setInterval(() => {
-              const buttons = document.querySelectorAll('button');
-              buttons.forEach(btn => {
-                if (btn.id === 'btn-app-logout') return;
-                const text = (btn.innerText || '').toLowerCase();
-                const dangerousKeywords = ['thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 'ghi nhận', 'kết nối', 'cài đặt', 'reset', 'đồng bộ'];
-                const isNavMenu = btn.closest('nav') || btn.closest('aside') || btn.className.includes('nav');
-                if (!isNavMenu && dangerousKeywords.some(kw => text.includes(kw))) {
-                  btn.style.setProperty('display', 'none', 'important');
+              const allElements = document.querySelectorAll('button, a, div[role="button"], li');
+              allElements.forEach(el => {
+                if (el.id === 'btn-app-logout') return;
+
+                const txt = (el.innerText || '').trim();
+                const txtLower = txt.toLowerCase();
+
+                // 1. Ẩn chính xác nút tab "Cài đặt và sao lưu" cùng các nút dưới sidebar
+                if (
+                  txt.includes('Cài đặt và sao lưu') ||
+                  txt === 'Cài đặt' ||
+                  txt === 'Sao lưu' ||
+                  txt.includes('Đồng bộ file JSON') ||
+                  txt.includes('Giao diện & Phối màu') ||
+                  txt.includes('Cơ sở dữ liệu')
+                ) {
+                  el.classList.add('guest-hide-strict');
+                  el.style.setProperty('display', 'none', 'important');
+                }
+
+                // 2. Ẩn các nút thao tác chỉnh sửa dữ liệu của học sinh
+                const dangerousKeywords = ['thêm', 'xóa', 'sửa', 'lưu', 'nhập excel', 'ghi nhận', 'kết nối', 'reset', 'đồng bộ'];
+                const isNavMenu = el.closest('nav') || el.closest('aside') || el.className.includes('nav');
+                if (!isNavMenu && dangerousKeywords.some(kw => txtLower === kw || txtLower.includes(kw))) {
+                  el.style.setProperty('display', 'none', 'important');
                 }
               });
-            }, 300);
+            }, 200);
           }
         }
 
