@@ -125,16 +125,17 @@
       }
 
       /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP 2 Ô */
+      /* KHU VỰC BÊN PHẢI: TĂNG ĐỘ RỘNG VÀ TỐI ƯU CÂN XỨNG */
       .lock-right-panel {
-        width: 520px !important; /* Tăng độ rộng để dòng chữ và các nút cân xứng hoàn hảo */
-        max-width: 100% !important;
+        width: 580px !important; /* Mở rộng bề ngang rộng rãi, cân đối với ảnh 3D */
+        max-width: 45vw !important;
         height: 100% !important;
         background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%) !important;
         border-left: 1.5px solid rgba(94, 234, 212, 0.3) !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 36px 20px !important; /* Giảm đệm 2 bên để chữ hiển thị thoáng */
+        padding: 40px 28px !important;
         box-sizing: border-box !important;
         box-shadow: -12px 0 35px rgba(0,0,0,0.45) !important;
         z-index: 20 !important;
@@ -142,25 +143,31 @@
       .panel-header {
         text-align: center !important;
         margin-bottom: 24px !important;
+        width: 100% !important;
       }
       .panel-header .badge {
         display: inline-block !important;
-        padding: 5px 14px !important;
+        padding: 6px 22px !important;
         border-radius: 9999px !important;
-        font-size: 11px !important;
-        font-weight: 700 !important;
-        background: rgba(94, 234, 212, 0.18) !important;
-        color: #99f6e4 !important;
-        border: 1px solid rgba(94, 234, 212, 0.4) !important;
-        margin-bottom: 8px !important;
-        letter-spacing: 0.5px !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.5px !important;
+        background: rgba(94, 234, 212, 0.22) !important;
+        color: #5eead4 !important;
+        border: 1.5px solid #2dd4bf !important;
+        margin-bottom: 12px !important;
+        box-shadow: 0 0 14px rgba(45, 212, 191, 0.35) !important;
       }
       .panel-header h2 {
         margin: 0 !important;
-        font-size: 24px !important;
+        font-size: 11.5px !important; /* Cỡ chữ tinh gọn, vừa khít 1 hàng ngang */
         font-weight: 800 !important;
         color: #ffffff !important;
-        text-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        letter-spacing: 0px !important;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
+        line-height: 1.4 !important;
       }
 
       /* 2 Ô CHỌN QUYỀN */
@@ -632,16 +639,10 @@
 
       <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô CÂN ĐỐI HOÀN HẢO -->
       <div class="lock-right-panel">
-        <div class="panel-header" style="text-align: center; margin-bottom: 22px;">
-          <div class="badge" style="display: inline-block; padding: 6px 22px; border-radius: 9999px; font-size: 14.5px; font-weight: 900; letter-spacing: 1.5px; background: rgba(94, 234, 212, 0.22); color: #5eead4; border: 1.5px solid #2dd4bf; box-shadow: 0 0 14px rgba(45, 212, 191, 0.35); margin-bottom: 12px;">
-            MATH-ASSISTANT
-          </div>
-
-          <h2 style="margin: 0; font-size: 11px; font-weight: 800; color: #ffffff; white-space: nowrap; text-align: center; letter-spacing: 0px; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">
-            HỆ SINH THÁI GIẢNG DẠY SỐ VÀ TRỢ LÝ PHÂN TÍCH NHẬN XÉT HỌC TẬP TOÁN
-          </h2>
-
-          <p style="font-size: 12.5px; color: #ccfbf1; margin: 8px 0 0 0; text-align: center;">Vui lòng chọn vai trò truy cập bên dưới</p>
+        <div class="panel-header">
+          <div class="badge">MATH-ASSISTANT</div>
+          <h2>HỆ SINH THÁI GIẢNG DẠY SỐ VÀ TRỢ LÝ PHÂN TÍCH NHẬN XÉT HỌC TẬP TOÁN</h2>
+          <p style="font-size:13px; color:#ccfbf1; margin:8px 0 0 0;">Vui lòng chọn vai trò truy cập bên dưới</p>
         </div>
 
         <div class="role-selector-grid">
