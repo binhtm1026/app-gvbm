@@ -156,6 +156,33 @@
         color: #ccfbf1 !important;
         margin: 8px 0 0 0 !important;
       }
+/* TỰ ĐỘNG CÂN ĐỐI TRÊN ĐIỆN THOẠI DI ĐỘNG */
+      @media (max-width: 768px) {
+        #app-lock-overlay {
+          flex-direction: column !important;
+          overflow-y: auto !important;
+        }
+        .lock-left-gallery {
+          display: none !important; /* Trên điện thoại ẩn ảnh lớn để tập trung khung đăng nhập */
+        }
+        .lock-right-panel {
+          width: 100% !important;
+          max-width: 100% !important;
+          height: 100vh !important;
+          border-left: none !important;
+          padding: 24px 16px !important;
+          justify-content: center !important;
+        }
+        .panel-header .badge {
+          font-size: 13px !important;
+          padding: 5px 16px !important;
+        }
+        .panel-header h2 {
+          font-size: 11px !important;
+          white-space: normal !important;
+          line-height: 1.4 !important;
+        }
+      }
 
       /* 2 Ô CHỌN QUYỀN */
       .role-selector-grid {
