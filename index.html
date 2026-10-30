@@ -11022,6 +11022,69 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
   </head>
   <body>
     <div id="root"></div>
+<!-- TỰ ĐỘNG SẮP XẾP DANH SÁCH TAB QUẢN LÝ HỌC SINH THEO A-Z TIẾNG VIỆT -->
+    <script>
+      (function() {
+        function compareVietnameseNames(nameA, nameB) {
+          const partsA = nameA.trim().split(/\s+/);
+          const partsB = nameB.trim().split(/\s+/);
+          const firstNameA = partsA[partsA.length - 1] || '';
+          const firstNameB = partsB[partsB.length - 1] || '';
+          
+          const cmpName = firstNameA.localeCompare(firstNameB, 'vi', { sensitivity: 'base' });
+          if (cmpName !== 0) return cmpName;
+          return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+        }
+
+        function sortStudentTableDOM() {
+          const table = document.querySelector('table');
+          if (!table) return;
+
+          const tbody = table.querySelector('tbody');
+          if (!tbody) return;
+
+          const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.trim());
+          const hasStudentHeaders = headers.some(h => h.includes('HỌ VÀ TÊN') || h.includes('Họ và tên'));
+          if (!hasStudentHeaders) return;
+
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          if (rows.length <= 1) return;
+
+          let nameColIdx = 1;
+          let classColIdx = 2;
+          headers.forEach((h, idx) => {
+            if (h.toUpperCase().includes('HỌ VÀ TÊN')) nameColIdx = idx;
+            if (h.toUpperCase().includes('LỚP')) classColIdx = idx;
+          });
+
+          rows.sort((rowA, rowB) => {
+            const cellsA = rowA.querySelectorAll('td');
+            const cellsB = rowB.querySelectorAll('td');
+            if (!cellsA[nameColIdx] || !cellsB[nameColIdx]) return 0;
+
+            const classA = cellsA[classColIdx] ? cellsA[classColIdx].innerText.trim() : '';
+            const classB = cellsB[classColIdx] ? cellsB[classColIdx].innerText.trim() : '';
+
+            if (classA !== classB && classA && classB) {
+              return classA.localeCompare(classB, 'vi', { numeric: true });
+            }
+
+            const nameA = cellsA[nameColIdx].innerText.trim();
+            const nameB = cellsB[nameColIdx].innerText.trim();
+            return compareVietnameseNames(nameA, nameB);
+          });
+
+          rows.forEach(r => tbody.appendChild(r));
+        }
+
+        setInterval(() => {
+          const activeTabTitle = document.querySelector('h1, h2');
+          if (activeTabTitle && (activeTabTitle.innerText.includes('Quản lý học sinh') || activeTabTitle.innerText.includes('Hồ Sơ Học Sinh'))) {
+            sortStudentTableDOM();
+          }
+        }, 800);
+      })();
+    </script>
   </body>
 </html>
 
