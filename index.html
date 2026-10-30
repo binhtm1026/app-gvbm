@@ -32,9 +32,9 @@
         padding: 0 !important;
       }
 
-      /* KHU VỰC BÊN TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ NGHỆ THUẬT */
+      /* KHU VỰC BÊN TRÁI: ẢNH LỚP HỌC 3D */
       .lock-left-gallery {
-        flex: 1.45 !important;
+        flex: 1 !important;
         height: 100% !important;
         position: relative !important;
         background: #0f172a !important;
@@ -51,7 +51,6 @@
         object-fit: cover !important;
         object-position: center right !important;
         display: block !important;
-        filter: brightness(1.02) contrast(1.03) !important;
       }
       .gallery-overlay-text {
         position: absolute !important;
@@ -65,45 +64,35 @@
       }
       .gallery-overlay-text h1 {
         margin: 0 !important;
-        font-size: 23px !important;
+        font-size: 22px !important;
         font-weight: 800 !important;
         color: #5eead4 !important;
         letter-spacing: 0.5px !important;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.6) !important;
       }
       .gallery-overlay-text .school-sub {
         margin: 4px 0 0 0 !important;
         font-size: 13px !important;
         color: #ccfbf1 !important;
-        line-height: 1.5 !important;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
       }
-
-      /* CỤM CHỮ TO TỰ DO KHÔNG CẦN KHUNG */
       .custom-math-welcome {
-        margin-top: 24px !important;
+        margin-top: 20px !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 6px !important;
+        gap: 4px !important;
       }
       .custom-math-welcome .mw-line1 {
-        font-size: 22px !important;
+        font-size: 20px !important;
         font-weight: 800 !important;
         color: #0f766e !important;
-        letter-spacing: 1px !important;
-        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 14px rgba(255, 255, 255, 0.85) !important;
+        text-shadow: 0 1px 3px #fff, 0 0 14px #fff !important;
       }
       .custom-math-welcome .mw-line2 {
-        font-size: 28px !important;
+        font-size: 26px !important;
         font-weight: 900 !important;
         color: #042f2e !important;
-        letter-spacing: 0.8px !important;
         text-transform: uppercase !important;
-        line-height: 1.25 !important;
-        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.95), 0 0 16px rgba(94, 234, 212, 0.95) !important;
+        text-shadow: 0 2px 4px #fff, 0 0 16px #5eead4 !important;
       }
-
-      /* KHẨU HIỆU DƯỚI CÙNG GÓC TRÁI */
       .bottom-left-quote {
         position: absolute !important;
         bottom: 24px !important;
@@ -114,20 +103,16 @@
         gap: 8px !important;
         padding: 8px 18px !important;
         background: rgba(4, 47, 46, 0.75) !important;
-        border: 1px solid rgba(94, 234, 212, 0.45) !important;
+        border: 1px solid rgba(94, 234, 212, 0.35) !important;
         border-radius: 9999px !important;
-        color: #fef08a !important;
-        font-size: 13.5px !important;
+        font-size: 13px !important;
         font-weight: 700 !important;
-        letter-spacing: 0.5px !important;
-        backdrop-filter: blur(8px) !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
+        color: #99f6e4 !important;
       }
 
-      /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP 2 Ô */
-      /* KHU VỰC BÊN PHẢI: TĂNG ĐỘ RỘNG VÀ TỐI ƯU CÂN XỨNG */
+      /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP */
       .lock-right-panel {
-        width: 580px !important; /* Mở rộng bề ngang rộng rãi, cân đối với ảnh 3D */
+        width: 480px !important;
         max-width: 45vw !important;
         height: 100% !important;
         background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%) !important;
@@ -143,11 +128,10 @@
       .panel-header {
         text-align: center !important;
         margin-bottom: 24px !important;
-        width: 100% !important;
       }
       .panel-header .badge {
         display: inline-block !important;
-        padding: 6px 22px !important;
+        padding: 6px 20px !important;
         border-radius: 9999px !important;
         font-size: 15px !important;
         font-weight: 900 !important;
@@ -160,14 +144,17 @@
       }
       .panel-header h2 {
         margin: 0 !important;
-        font-size: 11.5px !important; /* Cỡ chữ tinh gọn, vừa khít 1 hàng ngang */
+        font-size: 13.5px !important;
         font-weight: 800 !important;
         color: #ffffff !important;
-        white-space: nowrap !important;
+        line-height: 1.45 !important;
         text-align: center !important;
-        letter-spacing: 0px !important;
         text-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
-        line-height: 1.4 !important;
+      }
+      .panel-header p {
+        font-size: 12.5px !important;
+        color: #ccfbf1 !important;
+        margin: 8px 0 0 0 !important;
       }
 
       /* 2 Ô CHỌN QUYỀN */
@@ -204,75 +191,56 @@
         color: #ccfbf1 !important;
       }
       .role-card.guest-card.active {
-        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-        border-color: #fde047 !important;
-        color: #ffffff !important;
-        box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4) !important;
+        background: #ffffff !important;
+        border-color: #2dd4bf !important;
+        color: #0f766e !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25) !important;
       }
-      .role-card .role-title {
+      .role-title {
         font-size: 14px !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
       }
-      .role-card .role-desc {
+      .role-desc {
         font-size: 11px !important;
-        opacity: 0.9 !important;
+        opacity: 0.8 !important;
       }
 
-      /* FORM NHẬP PASS */
-      .lock-form {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-      }
+      /* FORM ĐĂNG NHẬP */
       .lock-form input {
         width: 100% !important;
         padding: 13px 16px !important;
         border-radius: 10px !important;
-        border: 1.5px solid rgba(94, 234, 212, 0.35) !important;
-        background: rgba(4, 47, 46, 0.7) !important;
-        color: #ffffff !important;
-        font-size: 15px !important;
+        border: 1.5px solid rgba(94, 234, 212, 0.3) !important;
+        background: rgba(4, 47, 46, 0.8) !important;
+        color: #fff !important;
+        font-size: 14px !important;
+        margin-bottom: 14px !important;
         box-sizing: border-box !important;
         outline: none !important;
-        backdrop-filter: blur(4px) !important;
-      }
-      .lock-form input::placeholder {
-        color: #99f6e4 !important;
-      }
-      .lock-form input:focus {
-        border-color: #5eead4 !important;
-        background: rgba(4, 47, 46, 0.9) !important;
       }
       .lock-form button {
         width: 100% !important;
         padding: 13px !important;
         border-radius: 10px !important;
         border: none !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
         cursor: pointer !important;
-        transition: transform 0.15s, opacity 0.2s !important;
+        transition: all 0.2s !important;
       }
       .lock-form button.btn-admin {
-        background: linear-gradient(135deg, #2dd4bf, #0d9488) !important;
+        background: #2dd4bf !important;
         color: #042f2e !important;
-        box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4) !important;
       }
       .lock-form button.btn-guest {
-        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4) !important;
-      }
-      .lock-form button:hover {
-        transform: translateY(-1px) !important;
-        opacity: 0.95 !important;
+        background: #38bdf8 !important;
+        color: #082f49 !important;
       }
       .lock-err {
-        color: #fecaca !important;
-        font-size: 13px !important;
-        font-weight: 600 !important;
+        color: #fca5a5 !important;
+        font-size: 12px !important;
+        margin-top: 10px !important;
         text-align: center !important;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
         display: none;
       }
 
@@ -577,7 +545,7 @@
       }
     </style>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT CHUẨN XÁC -->
     <div id="app-lock-overlay">
       <!-- CỘT TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ NGHỆ THUẬT -->
       <div class="lock-left-gallery">
@@ -601,37 +569,12 @@
         </div>
       </div>
 
-      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô (ADMIN & KHÁCH) -->
-      <!-- MÀN HÌNH ĐĂNG NHẬP 2 CỘT NGUYÊN VẸN -->
-    <div id="app-lock-overlay">
-      <!-- CỘT TRÁI: ẢNH LỚP HỌC 3D VÀ CHỮ NGHỆ THUẬT -->
-      <div class="lock-left-gallery">
-        <div class="gallery-single-poster">
-          <img src="Hinhnen.png" alt="Lớp học Toán THCS Ngô Quyền" />
-          
-          <div class="gallery-overlay-text">
-            <h1>TRƯỜNG THCS NGÔ QUYỀN</h1>
-            <p class="school-sub">Phường Rạch Giá, Tỉnh An Giang • Ứng Dụng Chuyển Đổi Số Giảng Dạy & Quản Lý Lớp Học AI</p>
-            
-            <div class="custom-math-welcome">
-              <span class="mw-line1">CHÀO MỪNG CÁC EM</span>
-              <span class="mw-line2">ĐẾN VỚI LỚP HỌC TOÁN</span>
-            </div>
-          </div>
-
-          <div class="bottom-left-quote">
-            <span>💡</span>
-            <span>Học Toán tư duy • Vững bước tương lai</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô CÂN ĐỐI HOÀN HẢO -->
+      <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP -->
       <div class="lock-right-panel">
         <div class="panel-header">
           <div class="badge">MATH-ASSISTANT</div>
-          <h2>HỆ SINH THÁI GIẢNG DẠY SỐ VÀ TRỢ LÝ PHÂN TÍCH NHẬN XÉT HỌC TẬP TOÁN</h2>
-          <p style="font-size:13px; color:#ccfbf1; margin:8px 0 0 0;">Vui lòng chọn vai trò truy cập bên dưới</p>
+          <h2>HỆ SINH THÁI GIẢNG DẠY SỐ<br>VÀ TRỢ LÝ PHÂN TÍCH NHẬN XÉT HỌC TẬP TOÁN</h2>
+          <p>Vui lòng chọn vai trò truy cập bên dưới</p>
         </div>
 
         <div class="role-selector-grid">
