@@ -389,56 +389,55 @@
       }
 /* ========================================================================= */
      /* ========================================================================= */
-      /* PHỐI MÀU CAO CẤP: NỀN DẠ QUANG SÁNG HINHNEN.PNG CHUẨN XÁC, KHÔNG MẤT TAB */
-      /* ========================================================================= */
+     /* PHỐI MÀU CAO CẤP: NỀN DẠ QUANG SÁNG HINHNEN.PNG CHUẨN XÁC, KHÔNG MẤT TAB */
+/* ========================================================================= */
 
-      /* 1. Đặt lớp ảnh Hinhnen.png dạ sáng cố định ở đáy trang */
-      body {
-        position: relative !important;
-        background-color: #062422 !important;
-        color: #f8fafc !important;
-        min-height: 100vh !important;
-        margin: 0 !important;
-      }
+/* 1. Đặt lớp ảnh Hinhnen.png dạ sáng cố định */
+body {
+  position: relative !important;
+  background-color: #042f2e !important;
+  color: #f8fafc !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+}
 
-      body::before {
-        content: "" !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background-image: 
-          radial-gradient(circle at 50% 35%, rgba(20, 184, 166, 0.45) 0%, rgba(15, 118, 110, 0.28) 55%, rgba(4, 47, 46, 0.88) 100%),
-          url("Hinhnen.png") !important;
-        background-position: center center !important;
-        background-size: cover !important;
-        background-repeat: no-repeat !important;
-        opacity: 0.38 !important; /* Độ sáng dạ quang của ảnh nền */
-        filter: brightness(1.2) contrast(1.08) !important;
-        pointer-events: none !important;
-        z-index: -1 !important; /* ĐẶT -1 ĐỂ LUÔN NẰM DƯỚI CÙNG, KHÔNG BAO GIỜ CHE NỘI DUNG */
-      }
+body::before {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(20, 184, 166, 0.42) 0%, rgba(15, 118, 110, 0.25) 50%, rgba(4, 47, 46, 0.88) 100%),
+    url("Hinhnen.png") !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  opacity: 0.42 !important; /* Độ sáng dạ quang */
+  filter: brightness(1.2) contrast(1.08) !important;
+  pointer-events: none !important;
+  z-index: 0 !important; /* Đặt lớp 0 để luôn ở dưới nội dung mà không bị che khuất */
+}
 
-      /* 2. Giữ nguyên cấu trúc React #root nhưng cho phép ánh sáng dạ lên */
-      #root {
-        position: relative !important;
-        z-index: 1 !important;
-        background: transparent !important;
-      }
+/* 2. Làm trong suốt các tầng giao diện để ánh sáng và vân ảnh dạ lên */
+#root,
+#root > div,
+main,
+.flex-1.min-w-0,
+.flex-1.overflow-y-auto {
+  background: transparent !important;
+  background-color: transparent !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
 
-      /* Làm trong suốt vùng làm việc chính để lộ hình nền dạ quang */
-      main {
-        background: transparent !important;
-      }
-
-      /* Thanh Header trên cùng làm kính mờ dạ sáng nhẹ */
-      header {
-        background: rgba(4, 47, 46, 0.8) !important;
-        backdrop-filter: blur(10px) !important;
-        border-bottom: 1px solid rgba(45, 212, 191, 0.3) !important;
-      }
-
+/* 3. Thanh Header trên cùng làm kính mờ dạ sáng nhẹ */
+header {
+  background: rgba(4, 47, 46, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(45, 212, 191, 0.3) !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
       /* 2. Cột menu bên trái (Sidebar) - Tối chuẩn mực, viền ngọc tinh tế */
       aside, 
       nav, 
