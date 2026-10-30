@@ -126,19 +126,19 @@
 
       /* KHU VỰC BÊN PHẢI: KHUNG ĐĂNG NHẬP 2 Ô */
       .lock-right-panel {
-  width: 485px !important;
-  max-width: 100% !important;
-  height: 100% !important;
-  background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%) !important;
-  border-left: 1.5px solid rgba(94, 234, 212, 0.3) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  padding: 36px 20px !important;
-  box-sizing: border-box !important;
-  box-shadow: -12px 0 35px rgba(0,0,0,0.45) !important;
-  z-index: 20 !important;
-}
+        width: 520px !important; /* Tăng độ rộng để dòng chữ và các nút cân xứng hoàn hảo */
+        max-width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%) !important;
+        border-left: 1.5px solid rgba(94, 234, 212, 0.3) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        padding: 36px 20px !important; /* Giảm đệm 2 bên để chữ hiển thị thoáng */
+        box-sizing: border-box !important;
+        box-shadow: -12px 0 35px rgba(0,0,0,0.45) !important;
+        z-index: 20 !important;
+      }
       .panel-header {
         text-align: center !important;
         margin-bottom: 24px !important;
@@ -632,13 +632,16 @@
 
       <!-- CỘT PHẢI: KHUNG ĐĂNG NHẬP 2 Ô CÂN ĐỐI HOÀN HẢO -->
       <div class="lock-right-panel">
-        <div class="panel-header">
-          <!-- KHUNG CHỨA CHỮ MATH-ASSISTANT -->
-          <div class="badge">MATH-ASSISTANT</div>
+        <div class="panel-header" style="text-align: center; margin-bottom: 22px;">
+          <div class="badge" style="display: inline-block; padding: 6px 22px; border-radius: 9999px; font-size: 14.5px; font-weight: 900; letter-spacing: 1.5px; background: rgba(94, 234, 212, 0.22); color: #5eead4; border: 1.5px solid #2dd4bf; box-shadow: 0 0 14px rgba(45, 212, 191, 0.35); margin-bottom: 12px;">
+            MATH-ASSISTANT
+          </div>
 
-          <!-- DÒNG TIÊU ĐỀ NẰM GỌN TRÊN 1 HÀNG DUY NHẤT -->
-          <h2 class="lock-app-title">HỆ SINH THÁI GIẢNG DẠY SỐ VÀ TRỢ LÝ PHÂN TÍCH NHẬN XÉT HỌC TẬP TOÁN</h2>
-          <p class="lock-app-subtitle">Vui lòng chọn vai trò truy cập bên dưới</p>
+          <h2 style="margin: 0; font-size: 11px; font-weight: 800; color: #ffffff; white-space: nowrap; text-align: center; letter-spacing: 0px; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">
+            HỆ SINH THÁI GIẢNG DẠY SỐ VÀ TRỢ LÝ PHÂN TÍCH NHẬN XÉT HỌC TẬP TOÁN
+          </h2>
+
+          <p style="font-size: 12.5px; color: #ccfbf1; margin: 8px 0 0 0; text-align: center;">Vui lòng chọn vai trò truy cập bên dưới</p>
         </div>
 
         <div class="role-selector-grid">
