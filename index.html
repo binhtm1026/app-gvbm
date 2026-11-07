@@ -11086,13 +11086,52 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
       })();
     </script>
   <script>
-  // CHẶN ĐỨNG TOÀN BỘ YÊU CẦU LÊN SERVER ĐỂ KHÔNG BỊ LỖI 404 "The page c..."
   (function() {
     const _fetch = window.fetch;
+    let lastTime = 0;
+
+    // Kho mẫu nhận xét đa dạng, kết hợp tên và phân tích điểm để mỗi em một câu riêng biệt
+    function makeVariedComment(name, score) {
+      const s = parseFloat(score) || 7.0;
+      
+      const gioi = [
+        `${name} có tư duy toán học nhanh nhạy, tiếp thu bài tốt và tích cực phát biểu xây dựng bài.`,
+        `${name} nắm vững kiến thức, giải quyết bài tập chính xác và có khả năng giải bài toán nâng cao tốt.`,
+        `${name} học tập chăm chỉ, tư duy logic sắc bén, luôn hoàn thành xuất sắc các nhiệm vụ học tập.`,
+        `${name} có năng khiếu học Toán, tính toán cẩn thận và chủ động giúp đỡ bạn bè trong giờ học.`
+      ];
+
+      const kha = [
+        `${name} nắm vững kiến thức trọng tâm, có ý thức làm bài đầy đủ, cần tự tin hơn ở bài toán nâng cao.`,
+        `${name} tiếp thu bài tương đối nhanh, chăm chú nghe giảng, cần rèn thêm kỹ năng lập luận chặt chẽ.`,
+        `${name} có tinh thần học tập tiến bộ, hoàn thành tốt bài tập trên lớp, cần phát huy hơn nữa.`,
+        `${name} chú ý nghe giảng, hiểu bài, cần rèn luyện thêm kỹ năng tính toán để tránh nhầm lẫn đáng tiếc.`
+      ];
+
+      const trungBinh = [
+        `${name} nắm được kiến thức cơ bản, có cố gắng trong giờ học, cần rèn luyện thêm kỹ năng tính toán.`,
+        `${name} tiếp thu bài mức độ vừa phải, cần chú ý tập trung nghe giảng và làm bài tập về nhà thường xuyên.`,
+        `${name} có ý thức học tập, cần cẩn thận hơn trong trình bày bài giải và tích cực hỏi thầy cô khi chưa hiểu.`,
+        `${name} hoàn thành bài tập cơ bản, cần tăng cường ôn tập các công thức để đạt kết quả tốt hơn.`
+      ];
+
+      const yeu = [
+        `${name} cần củng cố lại các dạng toán và công thức cơ bản, chú ý tập trung nghe giảng trên lớp.`,
+        `${name} cần dành thêm thời gian tự học ở nhà và chủ động trao đổi với giáo viên để tiến bộ.`,
+        `${name} còn lúng túng trong tính toán, cần tăng cường làm bài tập từ dễ đến khó để củng cố nền tảng.`
+      ];
+
+      let arr = trungBinh;
+      if (s >= 8.0) arr = gioi;
+      else if (s >= 6.5) arr = kha;
+      else if (s < 5.0) arr = yeu;
+
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
     window.fetch = async function(url, options) {
       const u = typeof url === 'string' ? url : (url ? url.url : '');
       
-      // Nếu app đang gọi API nhận xét
       if (u.includes('/api/gemini') || (u.includes('gemini') && !u.includes('googleapis.com'))) {
         
         // 1. Phản hồi kiểm tra trạng thái
@@ -11103,27 +11142,59 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
           });
         }
 
-        // 2. Tự động sinh nhận xét cho từng học sinh
+        // 2. Lấy dữ liệu học sinh đang gửi lên
         let body = {};
         try { body = JSON.parse(options.body); } catch(e) {}
         
         const name = body.studentName || body.name || body.hoTen || 'Học sinh';
         const score = parseFloat(body.score || body.diemTB || body.diem) || 7.0;
-        
+
+        // Lấy API Key đã lưu trong Cài đặt
+        let apiKey = localStorage.getItem('gemini_api_key') ||
+                     localStorage.getItem('geminiApiKey') ||
+                     localStorage.getItem('custom_gemini_key') ||
+                     localStorage.getItem('apiKey');
+
         let comment = "";
-        if (score >= 8.0) {
-          comment = "Tư duy toán học nhanh nhẹn, nắm chắc kiến thức và hoàn thành xuất sắc các bài tập trên lớp.";
-        } else if (score >= 6.5) {
-          comment = "Nắm vững kiến thức cơ bản, có ý thức tự giác làm bài, cần rèn luyện thêm ở dạng toán nâng cao.";
-        } else if (score >= 5.0) {
-          comment = "Có tiếp thu bài học, cần chú ý tính toán cẩn thận hơn và tích cực làm bài tập về nhà.";
-        } else {
-          comment = "Cần ôn tập lại các công thức cơ bản và chủ động trao đổi thêm với thầy cô để cải thiện kết quả.";
+
+        // Giãn cách 1 giây để không bị Google khóa lượt gọi
+        const now = Date.now();
+        if (now - lastTime < 1000) {
+          await new Promise(r => setTimeout(r, 1000 - (now - lastTime)));
+        }
+        lastTime = Date.now();
+
+        // Thử gọi trực tiếp Google Gemini AI nếu có API Key
+        if (apiKey) {
+          try {
+            const prompt = body.prompt || body.content || body.text || 
+              `Viết 01 câu nhận xét học tập môn Toán súc tích (khoảng 25-35 từ) theo Thông tư 22 cho học sinh ${name}, điểm TB: ${score}. Mỗi học sinh có một cách hành văn riêng biệt, nêu ưu điểm và điểm cần cố gắng.`;
+
+            const gRes = await _fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { maxOutputTokens: 120, temperature: 0.85 }
+              })
+            });
+
+            if (gRes.ok) {
+              const gJson = await gRes.json();
+              comment = gJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()?.replace(/^["']|["']$/g, '');
+            }
+          } catch (e) {
+            console.warn("Lỗi gọi Gemini:", e);
+          }
+        }
+
+        // Nếu không có API Key hoặc mạng lỗi, tự sinh ngẫu nhiên theo kho câu sư phạm
+        if (!comment || comment.length < 5) {
+          comment = makeVariedComment(name, score);
         }
 
         const words = comment.split(/\s+/).length;
 
-        // Trả về tất cả các biến mà React có thể dùng để hiển thị và lưu
         return new Response(JSON.stringify({
           success: true,
           status: 'success',
@@ -11143,19 +11214,6 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
       return _fetch.apply(this, arguments);
     };
   })();
-</script>
-<script>
-  // Tự động bấm nút "Lưu nhận xét" mỗi khi AI vừa viết xong cho 1 bạn
-  const observer = new MutationObserver(() => {
-    const saveBtn = Array.from(document.querySelectorAll('button')).find(b => 
-      (b.innerText || '').includes('Lưu nhận xét')
-    );
-    // Nếu nút Lưu đang sáng (có nội dung mới) và đang trong tiến trình chạy hàng loạt
-    if (saveBtn && !saveBtn.disabled && document.body.innerText.includes('Đang phân tích điểm')) {
-      saveBtn.click();
-    }
-  });
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 </script>
 </body>
 </html>
