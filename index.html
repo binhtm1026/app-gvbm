@@ -11144,6 +11144,19 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
     };
   })();
 </script>
+<script>
+  // Tự động bấm nút "Lưu nhận xét" mỗi khi AI vừa viết xong cho 1 bạn
+  const observer = new MutationObserver(() => {
+    const saveBtn = Array.from(document.querySelectorAll('button')).find(b => 
+      (b.innerText || '').includes('Lưu nhận xét')
+    );
+    // Nếu nút Lưu đang sáng (có nội dung mới) và đang trong tiến trình chạy hàng loạt
+    if (saveBtn && !saveBtn.disabled && document.body.innerText.includes('Đang phân tích điểm')) {
+      saveBtn.click();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+</script>
 </body>
 </html>
 
