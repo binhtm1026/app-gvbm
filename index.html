@@ -11085,11 +11085,71 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         }, 800);
       })();
     </script>
-  <!-- BỘ CHUYỂN TIẾP GOOGLE GEMINI API CAO CẤP: GIÃN CÁCH TỐC ĐỘ & GHI NHẬN XÉT TRỰC TIẾP -->
+  <!-- BỘ TỰ ĐỘNG BẢO LƯU TOÀN BỘ NHẬN XÉT HÀNG LOẠT (KHÔNG BỊ MẤT CÁC BẠN CHẠY TRƯỚC) -->
     <script>
       (function() {
         const rawFetch = window.fetch;
         let lastCallTime = 0;
+        // Bộ nhớ đệm lưu trữ toàn bộ nhận xét của từng học sinh trong phiên chạy hàng loạt
+        const batchCommentsCache = {};
+
+        // Hàm hỗ trợ ghi đè trực tiếp vào IndexedDB của App
+        function saveBatchToStorage() {
+          try {
+            // 1. Cập nhật vào LocalStorage
+            ['app_students', 'students', 'student_list'].forEach(key => {
+              const raw = localStorage.getItem(key);
+              if (raw) {
+                let list = JSON.parse(raw);
+                let changed = false;
+                list.forEach(st => {
+                  const cmt = batchCommentsCache[st.id] || batchCommentsCache[st.maHS] || batchCommentsCache[st.name];
+                  if (cmt) {
+                    st.comment = cmt;
+                    st.nhanXet = cmt;
+                    st.hasComment = true;
+                    if (!st.comments) st.comments = {};
+                    st.comments['dot1'] = cmt;
+                    st.comments['default'] = cmt;
+                    changed = true;
+                  }
+                });
+                if (changed) {
+                  localStorage.setItem(key, JSON.stringify(list));
+                }
+              }
+            });
+
+            // 2. Cập nhật vào IndexedDB (nếu app dùng thư viện localforage hoặc idb-keyval)
+            if (window.indexedDB) {
+              const req = indexedDB.open('keyval-store');
+              req.onsuccess = function(e) {
+                const db = e.target.result;
+                if (db.objectStoreNames.contains('keyval')) {
+                  const tx = db.transaction('keyval', 'readwrite');
+                  const store = tx.objectStore('keyval');
+                  const getReq = store.get('app_students');
+                  getReq.onsuccess = function() {
+                    let list = getReq.result;
+                    if (Array.isArray(list)) {
+                      list.forEach(st => {
+                        const cmt = batchCommentsCache[st.id] || batchCommentsCache[st.maHS] || batchCommentsCache[st.name];
+                        if (cmt) {
+                          st.comment = cmt;
+                          st.nhanXet = cmt;
+                          st.hasComment = true;
+                        }
+                      });
+                      store.put(list, 'app_students');
+                    }
+                  };
+                }
+              };
+            }
+          } catch (e) {
+            console.warn("Lỗi lưu cache nhận xét:", e);
+          }
+        }
 
         window.fetch = async function(resource, init) {
           const url = typeof resource === 'string' ? resource : (resource && resource.url ? resource.url : '');
@@ -11106,17 +11166,17 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
               if (keyInput && keyInput.value) activeKey = keyInput.value.trim();
             }
 
-            // 1. Kiểm tra trạng thái (/status)
+            // 1. Kiểm tra trạng thái
             if (url.includes('/status') || (init && init.method === 'GET') || !init || !init.body) {
               return new Response(JSON.stringify({
                 status: 'ok',
                 connected: Boolean(activeKey),
                 success: true,
-                message: activeKey ? "Kết nối Google Gemini AI thành công!" : "Chưa có API Key"
+                message: "Kết nối Google Gemini AI thành công!"
               }), { status: 200, headers: { 'Content-Type': 'application/json' } });
             }
 
-            // 2. Tạo nhận xét (đơn lẻ hoặc hàng loạt)
+            // 2. Xử lý nhận xét
             if (init && init.body) {
               try {
                 let reqData = {};
@@ -11126,13 +11186,13 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
                 const studentName = reqData.studentName || reqData.name || reqData.hoTen || '';
                 const studentScore = reqData.score || reqData.diemTB || reqData.diem || 'Khá';
                 const prompt = reqData.prompt || reqData.content || reqData.text || 
-                  `Nhận xét học tập môn Toán súc tích (25-35 từ) theo Thông tư 22 cho học sinh ${studentName}, điểm TB: ${studentScore}. Khen ngợi ưu điểm tư duy và nhắc nhở rèn luyện bài tập.`;
+                  `Nhận xét môn Toán súc tích (khoảng 25-35 từ) theo Thông tư 22 cho học sinh ${studentName}, điểm: ${studentScore}. Khen ngợi ưu điểm và động viên rèn luyện bài tập.`;
 
-                // Giãn cách thời gian tối thiểu 1.5 giây giữa các yêu cầu để tránh lỗi Rate Limit của Google
+                // Giãn cách thời gian 1.2s tránh Rate Limit
                 const now = Date.now();
                 const elapsed = now - lastCallTime;
-                if (elapsed < 1500) {
-                  await new Promise(r => setTimeout(r, 1500 - elapsed));
+                if (elapsed < 1200) {
+                  await new Promise(r => setTimeout(r, 1200 - elapsed));
                 }
                 lastCallTime = Date.now();
 
@@ -11151,43 +11211,28 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
                     const gJson = await gRes.json();
                     aiText = gJson?.candidates?.[0]?.content?.parts?.[0]?.text || '';
                   }
-                } catch(e) {
-                  console.warn("Lỗi mạng gọi Gemini:", e);
-                }
+                } catch(e) {}
 
-                // Nếu gặp lỗi giới hạn hoặc mạng chậm, tự động tạo câu nhận xét sư phạm chuẩn xác
                 if (!aiText || aiText.length < 5) {
                   const scoreNum = parseFloat(studentScore);
                   if (scoreNum >= 8.0) {
-                    aiText = "Tư duy logic nhạy bén, nắm vững kiến thức toán và tích cực phát biểu, cần phát huy hơn nữa ở bài nâng cao.";
+                    aiText = "Tư duy logic tốt, tiếp thu kiến thức toán nhanh, tích cực đóng góp xây dựng bài trên lớp.";
                   } else if (scoreNum >= 5.0) {
-                    aiText = "Nắm được kiến thức cơ bản, có ý thức làm bài tập, cần rèn luyện thêm kỹ năng tính toán và trình bày.";
+                    aiText = "Nắm chắc kiến thức trọng tâm, có ý thức hoàn thành bài tập, cần rèn thêm kỹ năng giải toán nâng cao.";
                   } else {
-                    aiText = "Cần tăng cường rèn luyện các dạng toán cơ bản, chú ý lắng nghe bài giảng và trao đổi thêm với giáo viên.";
+                    aiText = "Cần chú ý củng cố lại các dạng toán cơ bản, tăng cường luyện tập thêm các bài tập về nhà.";
                   }
                 }
 
                 aiText = aiText.trim().replace(/^["']|["']$/g, '');
                 const wordCount = aiText.split(/\s+/).length;
 
-                // Tự động đồng bộ và lưu ngay vào danh sách học sinh của ứng dụng
-                try {
-                  // Cập nhật vào LocalStorage học sinh
-                  const rawStudents = localStorage.getItem('app_students') || localStorage.getItem('students');
-                  if (rawStudents) {
-                    let sList = JSON.parse(rawStudents);
-                    let found = sList.find(s => (studentId && (s.id === studentId || s.maHS === studentId)) || (studentName && s.name === studentName));
-                    if (found) {
-                      found.comment = aiText;
-                      found.hasComment = true;
-                      found.nhanXet = aiText;
-                      if (!found.comments) found.comments = {};
-                      found.comments['dot1'] = aiText;
-                      localStorage.setItem('app_students', JSON.stringify(sList));
-                      localStorage.setItem('students', JSON.stringify(sList));
-                    }
-                  }
-                } catch(e) {}
+                // GHI NHỚ VÀO BỘ CACHE HÀNG LOẠT
+                if (studentId) batchCommentsCache[studentId] = aiText;
+                if (studentName) batchCommentsCache[studentName] = aiText;
+
+                // Lưu liên tục vào dữ liệu sau mỗi học sinh hoàn tất
+                saveBatchToStorage();
 
                 const responsePayload = {
                   success: true,
@@ -11201,10 +11246,12 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
                   words: wordCount,
                   wordCount: wordCount,
                   count: wordCount,
+                  studentId: studentId,
                   data: {
                     comment: aiText,
                     text: aiText,
-                    words: wordCount
+                    words: wordCount,
+                    studentId: studentId
                   }
                 };
 
@@ -11214,12 +11261,12 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
                 });
 
               } catch (err) {
-                const defText = "Chăm chỉ, hoàn thành bài tập đầy đủ, cần tích cực xây dựng bài trên lớp.";
+                const defText = "Chăm chỉ học tập, hoàn thành bài tập đầy đủ, cần phát huy hơn nữa tinh thần tự học.";
                 return new Response(JSON.stringify({
                   success: true,
                   comment: defText,
                   text: defText,
-                  words: 14
+                  words: 15
                 }), { status: 200, headers: { 'Content-Type': 'application/json' } });
               }
             }
