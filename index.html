@@ -11215,6 +11215,102 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
     };
   })();
 </script>
+<script>
+  // TỰ ĐỘNG THÊM NÚT "XÓA NHẬN XÉT HÀNG LOẠT" VÀ XÓA TẬN GỐC DỮ LIỆU
+  function injectDeleteBatchButton() {
+    // Tìm nút "Bắt đầu tạo hàng loạt"
+    const allButtons = Array.from(document.querySelectorAll('button'));
+    const startBtn = allButtons.find(b => (b.innerText || '').includes('Bắt đầu tạo hàng loạt'));
+    
+    // Nếu tìm thấy nút và chưa gắn nút Xóa hàng loạt
+    if (startBtn && !document.getElementById('btn-xoa-nhan-xet-hang-loat')) {
+      const parentDiv = startBtn.parentElement;
+      if (parentDiv) {
+        // Tạo container flex ngang nếu chưa có
+        parentDiv.style.display = 'flex';
+        parentDiv.style.gap = '8px';
+        parentDiv.style.alignItems = 'flex-end';
+
+        const delBtn = document.createElement('button');
+        delBtn.id = 'btn-xoa-nhan-xet-hang-loat';
+        delBtn.type = 'button';
+        delBtn.className = 'flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-all shrink-0';
+        delBtn.innerHTML = '<span>🗑️ Xóa nhận xét hàng loạt</span>';
+
+        delBtn.onclick = async function() {
+          if (!confirm("Thầy có chắc chắn muốn XÓA TOÀN BỘ nhận xét của học sinh trong hệ thống không?")) {
+            return;
+          }
+
+          try {
+            // 1. Xóa sạch trong IndexedDB (AIStudentInsightDB -> students)
+            if (window.indexedDB) {
+              const req = indexedDB.open("AIStudentInsightDB");
+              req.onsuccess = function(e) {
+                const db = e.target.result;
+                if (db.objectStoreNames.contains("students")) {
+                  const tx = db.transaction("students", "readwrite");
+                  const store = tx.objectStore("students");
+                  const getAllReq = store.getAll();
+                  getAllReq.onsuccess = function() {
+                    const list = getAllReq.result || [];
+                    list.forEach(st => {
+                      st.aiComment = "";
+                      st.teacherComment = "";
+                      st.comment = "";
+                      st.nhanXet = "";
+                      if (st.comments) st.comments = {};
+                      store.put(st);
+                    });
+                  };
+                }
+              };
+            }
+
+            // 2. Xóa sạch trong tất cả các khóa LocalStorage
+            const keys = ["co_thuy_ai_students_v2", "thay_binh_ai_students_v2", "gvbm_students", "students_data"];
+            keys.forEach(k => {
+              const raw = localStorage.getItem(k);
+              if (raw) {
+                try {
+                  let list = JSON.parse(raw);
+                  if (Array.isArray(list)) {
+                    list.forEach(st => {
+                      st.aiComment = "";
+                      st.teacherComment = "";
+                      st.comment = "";
+                      st.nhanXet = "";
+                      if (st.comments) st.comments = {};
+                    });
+                    localStorage.setItem(k, JSON.stringify(list));
+                  }
+                } catch(err) {}
+              }
+            });
+
+            // 3. Xóa trắng ô soạn thảo nếu đang mở
+            const textarea = document.querySelector('textarea');
+            if (textarea) textarea.value = '';
+
+            alert("Đã xóa sạch toàn bộ nhận xét thành công!");
+            // Tải lại trang để đồng bộ toàn bộ danh sách về trạng thái 'Chưa có'
+            window.location.reload();
+          } catch (err) {
+            alert("Lỗi khi xóa dữ liệu: " + (err?.message || err));
+          }
+        };
+
+        // Gắn nút Xóa ngay bên cạnh nút Bắt đầu tạo hàng loạt
+        startBtn.insertAdjacentElement('afterend', delBtn);
+      }
+    }
+  }
+
+  // Theo dõi giao diện để tự động chèn nút khi Thầy chuyển qua tab Nhận xét AI
+  const btnObserver = new MutationObserver(injectDeleteBatchButton);
+  btnObserver.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('DOMContentLoaded', injectDeleteBatchButton);
+</script>
 </body>
 </html>
 
