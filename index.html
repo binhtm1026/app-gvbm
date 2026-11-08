@@ -11234,13 +11234,13 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
 
         delBtn.onclick = async function() {
-  // 1. Quét tìm tất cả các hàng học sinh ở danh sách bên trái
+  // 1. Quét tìm tất cả các hàng học sinh trong danh sách bên trái
   const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
     const txt = el.innerText || '';
     return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
   });
 
-  // Tìm các học sinh đang được tích checkbox
+  // Tìm các học sinh đang được tích ô checkbox vuông
   let targets = [];
   studentRows.forEach(row => {
     const cb = row.querySelector('input[type="checkbox"]');
@@ -11249,7 +11249,7 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
     }
   });
 
-  // Nếu không tích chọn ai, lấy tất cả các bạn đang có chữ "Đã có"
+  // Nếu không tích em nào, tự động lấy các em đang có nhãn "Đã có"
   if (targets.length === 0) {
     targets = studentRows.filter(row => (row.innerText || '').includes('Đã có'));
   }
@@ -11259,46 +11259,64 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
     return;
   }
 
-  if (!confirm(`Thầy có chắc chắn muốn xóa nhận xét của ${targets.length} học sinh được chọn?`)) {
+  if (!confirm(`Thầy có chắc chắn muốn xóa sạch nhận xét của ${targets.length} học sinh được chọn?`)) {
     return;
   }
 
   delBtn.disabled = true;
-  delBtn.innerText = `Đang xóa (0/${targets.length})...`;
+  const originalText = delBtn.innerHTML;
 
-  // Tìm nút Xóa nhận xét đơn lẻ ở bên dưới khung soạn thảo
-  const getSingleDelBtn = () => Array.from(document.querySelectorAll('button')).find(b => 
-    (b.innerText || '').includes('Xóa nhận xét') && !b.id.includes('hang-loat')
-  );
-
-  let successCount = 0;
   for (let i = 0; i < targets.length; i++) {
     const row = targets[i];
     delBtn.innerText = `Đang xóa (${i + 1}/${targets.length})...`;
-    
-    // Giả lập click chọn vào học sinh
+
+    // 1. Click chọn vào học sinh
     row.click();
     await new Promise(r => setTimeout(r, 120));
 
-    // Bấm nút xóa nhận xét đơn lẻ của chính React
-    const sBtn = getSingleDelBtn();
-    if (sBtn && !sBtn.disabled) {
-      // Tự động đồng ý hộp thoại confirm nếu có
-      const oldConfirm = window.confirm;
-      window.confirm = () => true;
-      try {
-        sBtn.click();
-        await new Promise(r => setTimeout(r, 100));
-        successCount++;
-      } finally {
-        window.confirm = oldConfirm;
-      }
+    // 2. Tìm ô soạn thảo textarea và đặt giá trị rỗng kèm kích hoạt sự kiện React
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+      setter.call(textarea, " ");
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 60));
     }
+
+    // 3. Tìm nút "Lưu nhận xét" màu xanh và kích hoạt lưu
+    const saveBtn = Array.from(document.querySelectorAll('button')).find(b => (b.innerText || '').includes('Lưu nhận xét'));
+    if (saveBtn) {
+      saveBtn.click();
+      await new Promise(r => setTimeout(r, 100));
+    }
+
+    // 4. Chuyển nhãn xanh "Đã có" thành nhãn xám "Chưa có"
+    const badge = row.querySelector('span');
+    row.querySelectorAll('*').forEach(el => {
+      if (el.children.length === 0 && (el.innerText || '').trim() === 'Đã có') {
+        el.innerText = 'Chưa có';
+        if (el.className && typeof el.className === 'string') {
+          el.className = el.className
+            .replace(/emerald|green|indigo/g, 'slate')
+            .replace(/bg-emerald-\d+|bg-green-\d+|bg-indigo-\d+/g, 'bg-slate-100 text-slate-500');
+        }
+      }
+    });
+  }
+
+  // Xóa trắng ô soạn thảo sau khi hoàn thành
+  const finalArea = document.querySelector('textarea');
+  if (finalArea) {
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+    setter.call(finalArea, "");
+    finalArea.dispatchEvent(new Event('input', { bubbles: true }));
+    finalArea.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   delBtn.disabled = false;
-  delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
-  alert(`Đã hoàn tất xóa nhận xét của ${successCount} học sinh!`);
+  delBtn.innerHTML = originalText;
+  alert(`Đã xóa sạch nhận xét của ${targets.length} học sinh thành công!`);
 };
 
         startBtn.insertAdjacentElement('afterend', delBtn);
