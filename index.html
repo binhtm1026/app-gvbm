@@ -11333,23 +11333,6 @@ window.addEventListener('load', () => {
   }
 });
 </script> 
-<script>
-  // TỰ ĐỘNG CHẶN VÀ ĐÁP ỨNG YÊU CẦU LỖI 404 CỦA TEACHING_SCHEDULE
-  (function() {
-    const defaultFetch = window.fetch;
-    window.fetch = async function(...args) {
-      const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : '');
-      if (url.includes('teaching_schedule')) {
-        return new Response(JSON.stringify({}), {
-          status: 200,
-          statusText: 'OK',
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      return defaultFetch.apply(this, args);
-    };
-  })();
-</script> 
 </body>
 </html>
 
