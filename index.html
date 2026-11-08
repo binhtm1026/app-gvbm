@@ -11231,83 +11231,74 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         delBtn.id = 'btn-xoa-nhan-xet-hang-loat';
         delBtn.type = 'button';
         delBtn.className = 'flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-all shrink-0';
-        delBtn.innerHTML = '<span>🗑️ Xóa nhận xét hàng loạt</span>';
+        delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
 
         delBtn.onclick = async function() {
-  if (!confirm("Thầy có chắc chắn muốn XÓA SẠCH nhận xét của TOÀN BỘ học sinh không?")) {
+  // 1. Quét tìm tất cả các hàng học sinh ở danh sách bên trái
+  const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
+    const txt = el.innerText || '';
+    return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
+  });
+
+  // Tìm các học sinh đang được tích checkbox
+  let targets = [];
+  studentRows.forEach(row => {
+    const cb = row.querySelector('input[type="checkbox"]');
+    if (cb && cb.checked) {
+      targets.push(row);
+    }
+  });
+
+  // Nếu không tích chọn ai, lấy tất cả các bạn đang có chữ "Đã có"
+  if (targets.length === 0) {
+    targets = studentRows.filter(row => (row.innerText || '').includes('Đã có'));
+  }
+
+  if (targets.length === 0) {
+    alert("Thầy chưa chọn học sinh nào qua ô checkbox (hoặc không có học sinh nào đang có nhận xét để xóa)!");
+    return;
+  }
+
+  if (!confirm(`Thầy có chắc chắn muốn xóa nhận xét của ${targets.length} học sinh được chọn?`)) {
     return;
   }
 
   delBtn.disabled = true;
-  delBtn.innerText = "Đang xóa sạch...";
+  delBtn.innerText = `Đang xóa (0/${targets.length})...`;
 
-  try {
-    // 1. Dọn sạch IndexedDB (AIStudentInsightDB)
-    if (window.indexedDB) {
-      const databases = await window.indexedDB.databases?.() || [{ name: "AIStudentInsightDB" }];
-      for (const dbInfo of databases) {
-        if (!dbInfo.name) continue;
-        await new Promise((resolve) => {
-          const req = indexedDB.open(dbInfo.name);
-          req.onsuccess = function(e) {
-            const db = e.target.result;
-            const sNames = Array.from(db.objectStoreNames);
-            if (!sNames.length) { db.close(); return resolve(); }
-            const tx = db.transaction(sNames, "readwrite");
-            sNames.forEach(sn => {
-              const st = tx.objectStore(sn);
-              const gReq = st.getAll();
-              gReq.onsuccess = function() {
-                (gReq.result || []).forEach(item => {
-                  item.aiComment = "";
-                  item.teacherComment = "";
-                  item.comment = "";
-                  item.nhanXet = "";
-                  if (item.comments) item.comments = {};
-                  st.put(item);
-                });
-              };
-            });
-            tx.oncomplete = function() { db.close(); resolve(); };
-            tx.onerror = function() { db.close(); resolve(); };
-          };
-          req.onerror = function() { resolve(); };
-        });
+  // Tìm nút Xóa nhận xét đơn lẻ ở bên dưới khung soạn thảo
+  const getSingleDelBtn = () => Array.from(document.querySelectorAll('button')).find(b => 
+    (b.innerText || '').includes('Xóa nhận xét') && !b.id.includes('hang-loat')
+  );
+
+  let successCount = 0;
+  for (let i = 0; i < targets.length; i++) {
+    const row = targets[i];
+    delBtn.innerText = `Đang xóa (${i + 1}/${targets.length})...`;
+    
+    // Giả lập click chọn vào học sinh
+    row.click();
+    await new Promise(r => setTimeout(r, 120));
+
+    // Bấm nút xóa nhận xét đơn lẻ của chính React
+    const sBtn = getSingleDelBtn();
+    if (sBtn && !sBtn.disabled) {
+      // Tự động đồng ý hộp thoại confirm nếu có
+      const oldConfirm = window.confirm;
+      window.confirm = () => true;
+      try {
+        sBtn.click();
+        await new Promise(r => setTimeout(r, 100));
+        successCount++;
+      } finally {
+        window.confirm = oldConfirm;
       }
     }
-
-    // 2. Dọn sạch LocalStorage
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      try {
-        const val = localStorage.getItem(k);
-        if (val && (val.includes('aiComment') || val.includes('teacherComment'))) {
-          let obj = JSON.parse(val);
-          const clear = (o) => {
-            if (!o || typeof o !== 'object') return;
-            ['aiComment', 'teacherComment', 'comment', 'nhanXet'].forEach(p => { if (o[p] !== undefined) o[p] = ""; });
-            if (o.comments) o.comments = {};
-            Object.values(o).forEach(v => { if (typeof v === 'object') clear(v); });
-          };
-          clear(obj);
-          localStorage.setItem(k, JSON.stringify(obj));
-        }
-      } catch(e) {}
-    }
-
-    // 3. Đánh dấu để khi tải lại vẫn ở nguyên tab Nhận xét AI
-    sessionStorage.setItem('stay_in_ai_tab', '1');
-
-    alert("Đã xóa hoàn toàn nhận xét trong hệ thống!");
-    
-    // Tải lại trang để xóa sạch bộ nhớ tạm của React
-    window.location.reload();
-  } catch (err) {
-    alert("Có lỗi: " + (err?.message || err));
-  } finally {
-    delBtn.disabled = false;
-    delBtn.innerHTML = '<span>🗑️ Xóa nhận xét hàng loạt</span>';
   }
+
+  delBtn.disabled = false;
+  delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
+  alert(`Đã hoàn tất xóa nhận xét của ${successCount} học sinh!`);
 };
 
         startBtn.insertAdjacentElement('afterend', delBtn);
