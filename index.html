@@ -11231,7 +11231,7 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
 
         delBtn.onclick = async function() {
-  // 1. Quét tìm tất cả các hàng học sinh bên trái
+  // 1. Quét tìm tất cả các hàng học sinh ở danh sách bên trái
   const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
     const txt = el.innerText || '';
     return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
@@ -11252,89 +11252,122 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
   }
 
   if (targets.length === 0) {
-    alert("Thầy chưa chọn học sinh nào qua ô checkbox (hoặc không còn học sinh nào có nhận xét để xóa)!");
+    alert("Thầy chưa chọn học sinh nào qua ô checkbox!");
     return;
   }
 
-  if (!confirm(`Thầy có chắc chắn muốn xóa nhận xét của ${targets.length} học sinh được chọn?`)) {
+  // Thu thập Tên và Mã của các học sinh được chọn để xóa sạch trong bộ nhớ
+  const targetNames = targets.map(r => {
+    const lines = (r.innerText || '').split('\n').map(s => s.trim()).filter(Boolean);
+    return lines[0] || '';
+  });
+
+  if (!confirm(`Thầy có chắc chắn muốn XÓA SẠCH nhận xét của ${targets.length} học sinh được chọn?`)) {
     return;
   }
 
   delBtn.disabled = true;
-  const originalText = delBtn.innerHTML;
+  delBtn.innerText = "Đang xóa sạch...";
 
-  // Tạm khóa popup confirm của React để không hỏi xác nhận từng em
-  const oldConfirm = window.confirm;
-  window.confirm = () => true;
-
-  try {
-    for (let i = 0; i < targets.length; i++) {
-      const row = targets[i];
-      delBtn.innerText = `Đang xóa (${i + 1}/${targets.length})...`;
-
-      // B1: Click chọn học sinh để nạp vào khung soạn thảo bên phải
-      row.click();
-      await new Promise(r => setTimeout(r, 120));
-
-      // B2: Tìm nút "Xóa nhận xét" màu đỏ ở góc dưới bên phải
-      const singleDelBtn = Array.from(document.querySelectorAll('button')).find(b => 
-        (b.innerText || '').includes('Xóa nhận xét') && !b.id.includes('hang-loat') && !b.id.includes('da-chon')
-      );
-
-      // Nếu nút đỏ bấm được -> bấm xóa
-      if (singleDelBtn && !singleDelBtn.disabled) {
-        singleDelBtn.click();
-        await new Promise(r => setTimeout(r, 120));
-      }
-
-      // B3: Đảm bảo ô textarea bị xóa trắng và kích hoạt nút "Lưu nhận xét"
-      const textarea = document.querySelector('textarea');
-      if (textarea && textarea.value.trim() !== '') {
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-        nativeSetter.call(textarea, "");
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        textarea.dispatchEvent(new Event('change', { bubbles: true }));
-        await new Promise(r => setTimeout(r, 80));
-
-        const saveBtn = Array.from(document.querySelectorAll('button')).find(b => (b.innerText || '').includes('Lưu nhận xét'));
-        if (saveBtn && !saveBtn.disabled) {
-          saveBtn.click();
-          await new Promise(r => setTimeout(r, 100));
+  // 3. XÓA TRIỆT ĐỂ TRONG TẤT CẢ CÁC KHÓA BỘ NHỚ LOCALSTORAGE
+  const allKeys = ['co_thuy_ai_students_v2', 'thay_binh_ai_students_v2'];
+  allKeys.forEach(k => {
+    try {
+      const raw = localStorage.getItem(k);
+      if (raw) {
+        let list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          list.forEach(st => {
+            const isMatch = targetNames.some(name => 
+              (st.fullName && (name.includes(st.fullName) || st.fullName.includes(name))) ||
+              (st.studentCode && (r => (r.innerText || '').includes(st.studentCode)))
+            );
+            if (isMatch) {
+              st.aiComment = "";
+              st.teacherComment = "";
+              st.comment = "";
+              st.nhanXet = "";
+              if (st.comments) st.comments = {};
+            }
+          });
+          localStorage.setItem(k, JSON.stringify(list));
         }
       }
+    } catch(e) {}
+  });
 
-      // B4: Cập nhật nhãn bên trái thành "Chưa có" và bỏ tích checkbox
-      row.querySelectorAll('*').forEach(el => {
-        if (el.children.length === 0 && (el.innerText || '').trim() === 'Đã có') {
-          el.innerText = 'Chưa có';
-          if (el.className && typeof el.className === 'string') {
-            el.className = el.className
-              .replace(/emerald|green|indigo/g, 'slate')
-              .replace(/bg-emerald-\d+|bg-green-\d+|bg-indigo-\d+/g, 'bg-slate-100 text-slate-500');
-          }
+  // 4. XÓA TRIỆT ĐỂ TRONG INDEXEDDB (AIStudentInsightDB)
+  if (window.indexedDB) {
+    try {
+      const req = indexedDB.open("AIStudentInsightDB");
+      req.onsuccess = function(e) {
+        const db = e.target.result;
+        if (db.objectStoreNames.contains("students")) {
+          const tx = db.transaction("students", "readwrite");
+          const store = tx.objectStore("students");
+          const gReq = store.getAll();
+          gReq.onsuccess = function() {
+            (gReq.result || []).forEach(st => {
+              const isMatch = targetNames.some(name => 
+                st.fullName && (name.includes(st.fullName) || st.fullName.includes(name))
+              );
+              if (isMatch) {
+                st.aiComment = "";
+                st.teacherComment = "";
+                st.comment = "";
+                st.nhanXet = "";
+                if (st.comments) st.comments = {};
+                store.put(st);
+              }
+            });
+          };
         }
-      });
-      const cb = row.querySelector('input[type="checkbox"]');
-      if (cb) cb.checked = false;
-    }
-
-    // Làm trắng ô nhận xét trên màn hình
-    const finalArea = document.querySelector('textarea');
-    if (finalArea) {
-      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-      nativeSetter.call(finalArea, "");
-      finalArea.dispatchEvent(new Event('input', { bubbles: true }));
-      finalArea.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    alert(`Đã xóa sạch nhận xét của ${targets.length} học sinh thành công!`);
-  } catch (err) {
-    alert("Có lỗi: " + err);
-  } finally {
-    window.confirm = oldConfirm;
-    delBtn.disabled = false;
-    delBtn.innerHTML = originalText;
+      };
+    } catch(e) {}
   }
+
+  // 5. Bấm nút đỏ 'Xóa nhận xét' ở góc dưới bên phải cho em đang mở
+  const singleDelBtn = Array.from(document.querySelectorAll('button')).find(b => 
+    (b.innerText || '').includes('Xóa nhận xét') && !b.innerText.includes('đã chọn')
+  );
+  if (singleDelBtn && !singleDelBtn.disabled) {
+    // Tạm bỏ qua xác nhận nếu có
+    const originalConfirm = window.confirm;
+    window.confirm = () => true;
+    try {
+      singleDelBtn.click();
+    } catch(err) {}
+    window.confirm = originalConfirm;
+  }
+
+  // 6. Làm trắng ô soạn thảo trên màn hình
+  const textarea = document.querySelector('textarea');
+  if (textarea) {
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+    setter.call(textarea, "");
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  // 7. Chuyển nhãn các em được chọn thành 'Chưa có' và bỏ tick checkbox
+  targets.forEach(row => {
+    row.querySelectorAll('*').forEach(el => {
+      if (el.children.length === 0 && (el.innerText || '').trim() === 'Đã có') {
+        el.innerText = 'Chưa có';
+        if (el.className && typeof el.className === 'string') {
+          el.className = el.className
+            .replace(/emerald|green|indigo/g, 'slate')
+            .replace(/bg-emerald-\d+|bg-green-\d+|bg-indigo-\d+/g, 'bg-slate-100 text-slate-500');
+        }
+      }
+    });
+    const cb = row.querySelector('input[type="checkbox"]');
+    if (cb) cb.checked = false;
+  });
+
+  delBtn.disabled = false;
+  delBtn.innerHTML = '<span style="font-size: 15px;">🗑️</span> Xóa học sinh đã chọn';
+  alert(`Đã xóa sạch dữ liệu nhận xét của ${targets.length} học sinh thành công!`);
 };
         startBtn.insertAdjacentElement('afterend', delBtn);
       }
