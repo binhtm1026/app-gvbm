@@ -1246,27 +1246,26 @@ header {
   };
 
   // 3. Tự động kéo Lịch mới nhất từ Cloud về khi mở trình duyệt khác
-  async function pullScheduleFromCloud() {
-    try {
-      const res = await fetch(`${DB_BASE}/teaching_schedule.json`);
-      if (res.ok) {
-        const cloudObj = await res.json();
-        if (cloudObj && cloudObj.data) {
-          const currentLocal = localStorage.getItem(SCHEDULE_KEY);
-          if (currentLocal !== cloudObj.data) {
-            originalSetItem(SCHEDULE_KEY, cloudObj.data);
-            console.log('✅ Đã tải Lịch báo giảng mới nhất từ Firebase về thiết bị này!');
-            // Nếu người dùng đang đứng ở màn hình Lịch báo giảng thì tự làm mới để cập nhật
-            if (window.location.hash.includes('schedule') || document.querySelector('h1')?.innerText.includes('Lịch báo giảng')) {
-              window.location.reload();
-            }
+async function pullScheduleFromCloud() {
+  try {
+    const res = await fetch(`https://app-gvbm-thaybinhtoan-default-rtdb.asia-southeast1.firebasedatabase.app/teaching_schedule.json`);
+    if (res && res.ok) {
+      const cloudObj = await res.json();
+      if (cloudObj && cloudObj.data) {
+        const currentLocal = localStorage.getItem(SCHEDULE_KEY);
+        if (currentLocal !== cloudObj.data) {
+          originalSetItem(SCHEDULE_KEY, cloudObj.data);
+          console.log('✅ Đã tải Lịch báo giảng mới nhất từ Firebase về thiết bị này!');
+          if (window.location.hash.includes('schedule') || document.querySelector('h1')?.innerText.includes('Lịch báo giảng')) {
+            window.location.reload();
           }
         }
       }
-    } catch (err) {
-      console.warn('Không thể kéo lịch từ Firebase:', err);
     }
+  } catch (err) {
+    // Bỏ qua cảnh báo lỗi ra màn hình
   }
+}
 
   // Tải dữ liệu ngay khi mở web
   pullScheduleFromCloud();
