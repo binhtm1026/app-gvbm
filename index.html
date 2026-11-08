@@ -11231,13 +11231,13 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
 
         delBtn.onclick = async function() {
-  // 1. Quét tìm tất cả các hàng học sinh trong danh sách bên trái
+  // 1. Quét tìm tất cả các thẻ học sinh ở danh sách bên trái
   const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
     const txt = el.innerText || '';
     return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
   });
 
-  // Tìm các học sinh đang được tích ô checkbox vuông
+  // 2. Lọc ra các học sinh đang được đánh dấu tích chọn ở ô checkbox
   let targets = [];
   studentRows.forEach(row => {
     const cb = row.querySelector('input[type="checkbox"]');
@@ -11246,74 +11246,114 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
     }
   });
 
-  // Nếu không tích em nào, tự động lấy các em đang có nhãn "Đã có"
+  // Nếu Thầy không tích chọn em nào, tự động chọn các em đang có nhãn "Đã có"
   if (targets.length === 0) {
     targets = studentRows.filter(row => (row.innerText || '').includes('Đã có'));
   }
 
   if (targets.length === 0) {
-    alert("Thầy chưa chọn học sinh nào qua ô checkbox (hoặc không có học sinh nào đang có nhận xét để xóa)!");
+    alert("Thầy chưa chọn học sinh nào qua ô checkbox (hoặc không còn học sinh nào có nhận xét để xóa)!");
     return;
   }
 
-  if (!confirm(`Thầy có chắc chắn muốn xóa sạch nhận xét của ${targets.length} học sinh được chọn?`)) {
+  if (!confirm(`Thầy có chắc chắn muốn XÓA VĨNH VIỄN nhận xét của ${targets.length} học sinh được chọn?`)) {
     return;
   }
 
   delBtn.disabled = true;
   const originalText = delBtn.innerHTML;
 
-  for (let i = 0; i < targets.length; i++) {
-    const row = targets[i];
-    delBtn.innerText = `Đang xóa (${i + 1}/${targets.length})...`;
+  // Tạm thời ghi đè confirm để React không bật popup hỏi liên tục từng em
+  const originalConfirm = window.confirm;
+  window.confirm = () => true;
 
-    // 1. Click chọn vào học sinh
-    row.click();
-    await new Promise(r => setTimeout(r, 120));
+  try {
+    for (let i = 0; i < targets.length; i++) {
+      const row = targets[i];
+      delBtn.innerText = `Đang xóa (${i + 1}/${targets.length})...`;
 
-    // 2. Tìm ô soạn thảo textarea và đặt giá trị rỗng kèm kích hoạt sự kiện React
-    const textarea = document.querySelector('textarea');
-    if (textarea) {
-      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-      setter.call(textarea, " ");
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      textarea.dispatchEvent(new Event('change', { bubbles: true }));
-      await new Promise(r => setTimeout(r, 60));
-    }
+      // B1: Click chọn học sinh để nạp vào khung soạn thảo bên phải
+      row.click();
+      await new Promise(r => setTimeout(r, 180));
 
-    // 3. Tìm nút "Lưu nhận xét" màu xanh và kích hoạt lưu
-    const saveBtn = Array.from(document.querySelectorAll('button')).find(b => (b.innerText || '').includes('Lưu nhận xét'));
-    if (saveBtn) {
-      saveBtn.click();
-      await new Promise(r => setTimeout(r, 100));
-    }
+      // B2: Tìm nút "Xóa nhận xét" màu đỏ ở góc dưới bên phải
+      const singleDelBtn = Array.from(document.querySelectorAll('button')).find(b => 
+        (b.innerText || '').includes('Xóa nhận xét') && !b.id.includes('hang-loat') && !b.id.includes('da-chon')
+      );
 
-    // 4. Chuyển nhãn xanh "Đã có" thành nhãn xám "Chưa có"
-    const badge = row.querySelector('span');
-    row.querySelectorAll('*').forEach(el => {
-      if (el.children.length === 0 && (el.innerText || '').trim() === 'Đã có') {
-        el.innerText = 'Chưa có';
-        if (el.className && typeof el.className === 'string') {
-          el.className = el.className
-            .replace(/emerald|green|indigo/g, 'slate')
-            .replace(/bg-emerald-\d+|bg-green-\d+|bg-indigo-\d+/g, 'bg-slate-100 text-slate-500');
+      // B3: Bấm nút xóa nếu nút sáng (không bị disabled)
+      if (singleDelBtn && !singleDelBtn.disabled) {
+        singleDelBtn.click();
+        await new Promise(r => setTimeout(r, 150));
+      } else {
+        // Nếu nút xóa bị mờ (do ô chưa kích hoạt), ta xóa trắng textarea và bấm Lưu nhận xét
+        const textarea = document.querySelector('textarea');
+        if (textarea) {
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+          setter.call(textarea, "");
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          textarea.dispatchEvent(new Event('change', { bubbles: true }));
+          await new Promise(r => setTimeout(r, 80));
+
+          const saveBtn = Array.from(document.querySelectorAll('button')).find(b => (b.innerText || '').includes('Lưu nhận xét'));
+          if (saveBtn && !saveBtn.disabled) {
+            saveBtn.click();
+            await new Promise(r => setTimeout(r, 100));
+          }
         }
       }
-    });
-  }
 
-  // Xóa trắng ô soạn thảo sau khi hoàn thành
-  const finalArea = document.querySelector('textarea');
-  if (finalArea) {
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-    setter.call(finalArea, "");
-    finalArea.dispatchEvent(new Event('input', { bubbles: true }));
-    finalArea.dispatchEvent(new Event('change', { bubbles: true }));
-  }
+      // B4: Cập nhật nhãn bên trái thành "Chưa có"
+      row.querySelectorAll('*').forEach(el => {
+        if (el.children.length === 0 && (el.innerText || '').trim() === 'Đã có') {
+          el.innerText = 'Chưa có';
+          if (el.className && typeof el.className === 'string') {
+            el.className = el.className
+              .replace(/emerald|green|indigo/g, 'slate')
+              .replace(/bg-emerald-\d+|bg-green-\d+|bg-indigo-\d+/g, 'bg-slate-100 text-slate-500');
+          }
+        }
+      });
+    }
 
-  delBtn.disabled = false;
-  delBtn.innerHTML = originalText;
-  alert(`Đã xóa sạch nhận xét của ${targets.length} học sinh thành công!`);
+    // Sau khi duyệt xóa xong toàn bộ danh sách được chọn:
+    // Đồng bộ dọn dẹp triệt để trong IndexedDB cho các mã học sinh này
+    if (window.indexedDB) {
+      try {
+        const req = indexedDB.open("AIStudentInsightDB");
+        req.onsuccess = function(e) {
+          const db = e.target.result;
+          if (db.objectStoreNames.contains("students")) {
+            const tx = db.transaction("students", "readwrite");
+            const store = tx.objectStore("students");
+            const getReq = store.getAll();
+            getReq.onsuccess = function() {
+              (getReq.result || []).forEach(st => {
+                // Kiểm tra nếu học sinh này nằm trong danh sách đã chọn xóa
+                const isTarget = targets.some(t => (t.innerText || '').includes(st.id) || (t.innerText || '').includes(st.fullName));
+                if (isTarget) {
+                  st.aiComment = "";
+                  st.teacherComment = "";
+                  st.comment = "";
+                  st.nhanXet = "";
+                  if (st.comments) st.comments = {};
+                  store.put(st);
+                }
+              });
+            };
+          }
+        };
+      } catch (e) {}
+    }
+
+    alert(`Đã xóa sạch hoàn toàn nhận xét của ${targets.length} học sinh!`);
+  } catch (err) {
+    alert("Có lỗi khi xóa: " + (err?.message || err));
+  } finally {
+    window.confirm = originalConfirm;
+    delBtn.disabled = false;
+    delBtn.innerHTML = originalText;
+  }
 };
 
         startBtn.insertAdjacentElement('afterend', delBtn);
