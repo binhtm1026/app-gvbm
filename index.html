@@ -11231,89 +11231,196 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
 
         delBtn.onclick = async function() {
-  const ctx = window.__AI_CTX__ || window.__REACT_AI_CONTEXT__;
-  if (!ctx || typeof ctx.i !== 'function') {
-    alert("Thầy vui lòng bấm chuột vào 1 học sinh bất kỳ ở danh sách bên trái trước, sau đó bấm lại nút Xóa này nhé!");
-    return;
-  }
-
   // 1. Tìm tất cả các dòng học sinh ở cột bên trái
   const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
     const txt = el.innerText || '';
     return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
   });
 
-  // 2. Lọc các dòng đang được tích chọn checkbox
+  // 2. Lọc các dòng đang được tích chọn checkbox (nếu không tích chọn ai thì lấy các dòng "Đã có" hoặc tất cả)
   let targetRows = studentRows.filter(row => {
     const cb = row.querySelector('input[type="checkbox"]');
     return cb && cb.checked;
   });
 
-  // Nếu không tích chọn ô nào, lấy các dòng đang có chữ "Đã có"
   if (targetRows.length === 0) {
     targetRows = studentRows.filter(row => (row.innerText || '').includes('Đã có'));
   }
-
   if (targetRows.length === 0) {
-    alert("Thầy chưa tích chọn học sinh nào (hoặc không có học sinh nào đang có nhận xét)!");
-    return;
+    targetRows = studentRows;
   }
 
-  // Lấy danh sách mã HSLP (ví dụ: HSLP99_01) từ các dòng đã chọn
+  // Lấy danh sách mã HSLP (ví dụ: HSLP99_01)
   const targetCodes = targetRows.map(row => {
     const match = (row.innerText || '').match(/HSLP[\w_]+/i);
     return match ? match[0].trim() : null;
   }).filter(Boolean);
 
-  if (!confirm(`Thầy có chắc chắn muốn xóa vĩnh viễn nhận xét của ${targetCodes.length} học sinh đã chọn?`)) {
+  if (targetCodes.length === 0) {
+    alert("Không tìm thấy học sinh nào để xóa!");
+    return;
+  }
+
+  if (!confirm(`Thầy có chắc chắn muốn XÓA SẠCH VĨNH VIỄN nhận xét của ${targetCodes.length} học sinh đã chọn?`)) {
     return;
   }
 
   delBtn.disabled = true;
   const originalHTML = delBtn.innerHTML;
+  delBtn.innerText = "Đang xóa tận gốc...";
 
   try {
-    // 3. Đọc danh sách học sinh từ IndexedDB để lấy đúng ID gốc của từng em
-    const dbStudents = await new Promise((resolve) => {
-      const req = indexedDB.open("AIStudentInsightDB");
-      req.onsuccess = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains("students")) { db.close(); return resolve([]); }
-        const tx = db.transaction("students", "readonly");
-        const gReq = tx.objectStore("students").getAll();
-        gReq.onsuccess = () => { db.close(); resolve(gReq.result || []); };
-        gReq.onerror = () => { db.close(); resolve([]); };
-      };
-      req.onerror = () => resolve([]);
+    const codeSet = new Set(targetCodes);
+    const matchedStudentObjects = [];
+
+    // 3. QUÉT THẲNG VÀO BỘ NHỚ RAM CỦA REACT (__reactFiber$) ĐỂ XÓA TẬN GỐC TRONG BỘ NHỚ
+    document.querySelectorAll('*').forEach(domEl => {
+      const fiberKey = Object.keys(domEl).find(k => k.startsWith('__reactFiber$') || k.startsWith('__reactProps$'));
+      if (!fiberKey) return;
+
+      let fiber = domEl[fiberKey];
+      let depth = 0;
+      while (fiber && depth < 15) {
+        [fiber.memoizedProps, fiber.pendingProps].forEach(props => {
+          if (!props || typeof props !== 'object') return;
+          Object.values(props).forEach(val => {
+            if (Array.isArray(val)) {
+              val.forEach(item => {
+                if (item && typeof item === 'object' && (codeSet.has(item.studentCode) || codeSet.has(item.id))) {
+                  item.aiComment = "";
+                  item.teacherComment = "";
+                  item.comment = "";
+                  if (!matchedStudentObjects.some(x => x.id === item.id)) matchedStudentObjects.push(item);
+                }
+              });
+            } else if (val && typeof val === 'object' && (codeSet.has(val.studentCode) || codeSet.has(val.id))) {
+              val.aiComment = "";
+              val.teacherComment = "";
+              val.comment = "";
+              if (!matchedStudentObjects.some(x => x.id === val.id)) matchedStudentObjects.push(val);
+            }
+          });
+        });
+
+        let stateNode = fiber.memoizedState;
+        let sDepth = 0;
+        while (stateNode && sDepth < 20) {
+          const stVal = stateNode.memoizedState;
+          if (Array.isArray(stVal)) {
+            stVal.forEach(item => {
+              if (item && typeof item === 'object' && (codeSet.has(item.studentCode) || codeSet.has(item.id))) {
+                item.aiComment = "";
+                item.teacherComment = "";
+                item.comment = "";
+                if (!matchedStudentObjects.some(x => x.id === item.id)) matchedStudentObjects.push(item);
+              }
+            });
+          } else if (stVal && typeof stVal === 'object' && (codeSet.has(stVal.studentCode) || codeSet.has(stVal.id))) {
+            stVal.aiComment = "";
+            stVal.teacherComment = "";
+            stVal.comment = "";
+            if (!matchedStudentObjects.some(x => x.id === stVal.id)) matchedStudentObjects.push(stVal);
+          }
+          stateNode = stateNode.next;
+          sDepth++;
+        }
+        fiber = fiber.return;
+        depth++;
+      }
     });
 
-    const matchedStudents = dbStudents.filter(st => 
-      targetCodes.includes(st.studentCode) || targetCodes.includes(st.id)
-    );
-
-    // 4. Gọi hàm gốc ctx.i(id, "", !1) và ctx.i(id, "", !0) cho từng em
-    // Hàm này sẽ tự động xóa trong State của React, IndexedDB, LocalStorage VÀ đẩy lên Firebase Cloud!
-    for (let k = 0; k < matchedStudents.length; k++) {
-      const st = matchedStudents[k];
-      delBtn.innerText = `Đang xóa (${k + 1}/${matchedStudents.length})...`;
-      await ctx.i(st.id, "", !1);
-      await ctx.i(st.id, "", !0);
+    // 4. NẾU CÓ HÀM GỐC ctx.i CỦA REACT -> GỌI LUÔN ĐỂ ĐỒNG BỘ LÊN CLOUD & INDEXEDDB
+    const ctx = window.__AI_CTX__ || window.__REACT_AI_CONTEXT__;
+    if (ctx && typeof ctx.i === 'function' && matchedStudentObjects.length > 0) {
+      for (let k = 0; k < matchedStudentObjects.length; k++) {
+        const st = matchedStudentObjects[k];
+        delBtn.innerText = `Đang xóa (${k + 1}/${matchedStudentObjects.length})...`;
+        try {
+          await ctx.i(st.id, "", !1);
+          await ctx.i(st.id, "", !0);
+        } catch (e) {}
+      }
     }
 
-    // 5. Xóa trắng ô nhận xét bên phải
-    if (typeof ctx.S === 'function') ctx.S("");
-    if (ctx.N) {
+    // 5. XÓA SẠCH TRONG LOCALSTORAGE (Quét mọi khóa có trong máy)
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw && raw.includes('HSLP')) {
+          let list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            list.forEach(st => {
+              if (st && (codeSet.has(st.studentCode) || codeSet.has(st.id))) {
+                st.aiComment = "";
+                st.teacherComment = "";
+                st.comment = "";
+              }
+            });
+            localStorage.setItem(key, JSON.stringify(list));
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 6. XÓA SẠCH TRONG INDEXEDDB
+    if (window.indexedDB) {
+      await new Promise((resolve) => {
+        const req = indexedDB.open("AIStudentInsightDB");
+        req.onsuccess = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("students")) { db.close(); return resolve(); }
+          const tx = db.transaction("students", "readwrite");
+          const store = tx.objectStore("students");
+          const gReq = store.getAll();
+          gReq.onsuccess = () => {
+            (gReq.result || []).forEach(st => {
+              if (codeSet.has(st.studentCode) || codeSet.has(st.id)) {
+                st.aiComment = "";
+                st.teacherComment = "";
+                st.comment = "";
+                store.put(st);
+              }
+            });
+          };
+          tx.oncomplete = () => { db.close(); resolve(); };
+          tx.onerror = () => { db.close(); resolve(); };
+        };
+        req.onerror = () => resolve();
+      });
+    }
+
+    // 7. Làm sạch ô nhận xét bên phải ngay lập tức
+    if (ctx && typeof ctx.S === 'function') ctx.S("");
+    if (ctx && ctx.N) {
       ctx.N.aiComment = "";
       ctx.N.teacherComment = "";
     }
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+      setter.call(textarea, "");
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 
-    // 6. Bỏ tích các ô checkbox
+    // 8. Đổi nhãn bên trái sang "Chưa có" và bỏ tích checkbox
     targetRows.forEach(row => {
+      row.querySelectorAll('*').forEach(el => {
+        if (el.children.length === 0 && (el.innerText || '').trim() === 'Đã có') {
+          el.innerText = 'Chưa có';
+          if (el.className && typeof el.className === 'string') {
+            el.className = el.className
+              .replace(/emerald|green|indigo/g, 'slate')
+              .replace(/bg-emerald-\d+|bg-green-\d+|bg-indigo-\d+/g, 'bg-slate-100 text-slate-500');
+          }
+        }
+      });
       const cb = row.querySelector('input[type="checkbox"]');
       if (cb && cb.checked) cb.checked = false;
     });
 
-    alert(`Đã xóa sạch vĩnh viễn nhận xét của ${matchedStudents.length} học sinh!`);
+    alert(`Đã xóa sạch tận gốc nhận xét của ${targetCodes.length} học sinh!`);
   } catch (err) {
     alert("Có lỗi khi xóa: " + (err?.message || err));
   } finally {
