@@ -11231,9 +11231,34 @@ PT1-ABC123-...-d4e5f6`}),m&&(0,Z.jsx)(`p`,{className:`mt-3 rounded-xl border bor
         delBtn.innerHTML = '<span>🗑️ Xóa học sinh đã chọn</span>';
 
         // Hàm xóa tận gốc dùng chung cho cả Xóa đơn lẻ và Xóa hàng loạt
-window.__CLEAN_STUDENTS__ = async function(targetCodes) {
-  const codeSet = new Set(targetCodes.filter(Boolean));
+// Kho lưu danh sách các mã học sinh đã bị xóa nhận xét (chống bị khôi phục khi Refresh F5 / Firebase tải về)
+const DELETED_KEY = '__DELETED_STUDENT_COMMENTS_V1__';
+
+function getDeletedSet() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || '[]'));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function saveDeletedSet(setObj) {
+  try {
+    localStorage.setItem(DELETED_KEY, JSON.stringify(Array.from(setObj)));
+  } catch (e) {}
+}
+
+// Hàm xóa tận gốc dùng chung cho cả Xóa đơn lẻ, Xóa hàng loạt và Tự động quét khi F5
+window.__CLEAN_STUDENTS__ = async function(targetCodes, isAutoRefreshScan = false) {
+  const codeSet = new Set((targetCodes || []).filter(Boolean));
   if (codeSet.size === 0) return;
+
+  // Nếu là lệnh xóa từ Thầy -> Ghi nhớ vĩnh viễn vào bộ nhớ chống F5
+  if (!isAutoRefreshScan) {
+    const delSet = getDeletedSet();
+    codeSet.forEach(c => delSet.add(c));
+    saveDeletedSet(delSet);
+  }
 
   // 1. Xóa trực tiếp trong bộ nhớ RAM của React (__reactFiber$)
   document.querySelectorAll('*').forEach(domEl => {
@@ -11287,55 +11312,85 @@ window.__CLEAN_STUDENTS__ = async function(targetCodes) {
     }
   });
 
-  // 2. Xóa sạch trong LocalStorage
+  // 2. Quét sạch TẤT CẢ các khóa trong LocalStorage (Bất kể tên khóa là gì)
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
+    if (key === DELETED_KEY) continue;
     try {
       const raw = localStorage.getItem(key);
-      if (raw && raw.includes('HSLP')) {
-        let list = JSON.parse(raw);
-        if (Array.isArray(list)) {
-          list.forEach(st => {
-            if (st && (codeSet.has(st.studentCode) || codeSet.has(st.id))) {
-              st.aiComment = "";
-              st.teacherComment = "";
-              st.comment = "";
+      if (raw && (raw.includes('aiComment') || raw.includes('teacherComment') || raw.includes('HSLP'))) {
+        let parsed = JSON.parse(raw);
+        let modified = false;
+        const cleanObj = (obj) => {
+          if (!obj || typeof obj !== 'object') return;
+          if (Array.isArray(obj)) {
+            obj.forEach(cleanObj);
+          } else {
+            if (codeSet.has(obj.studentCode) || codeSet.has(obj.id)) {
+              if (obj.aiComment || obj.teacherComment || obj.comment) {
+                obj.aiComment = "";
+                obj.teacherComment = "";
+                obj.comment = "";
+                modified = true;
+              }
             }
-          });
-          localStorage.setItem(key, JSON.stringify(list));
+            Object.values(obj).forEach(v => {
+              if (v && typeof v === 'object') cleanObj(v);
+            });
+          }
+        };
+        cleanObj(parsed);
+        if (modified) {
+          localStorage.setItem(key, JSON.stringify(parsed));
         }
       }
     } catch (e) {}
   }
 
-  // 3. Xóa sạch trong IndexedDB
-  if (window.indexedDB) {
-    await new Promise((resolve) => {
-      const req = indexedDB.open("AIStudentInsightDB");
-      req.onsuccess = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains("students")) { db.close(); return resolve(); }
-        const tx = db.transaction("students", "readwrite");
-        const store = tx.objectStore("students");
-        const gReq = store.getAll();
-        gReq.onsuccess = () => {
-          (gReq.result || []).forEach(st => {
-            if (codeSet.has(st.studentCode) || codeSet.has(st.id)) {
-              st.aiComment = "";
-              st.teacherComment = "";
-              st.comment = "";
-              store.put(st);
-            }
-          });
-        };
-        tx.oncomplete = () => { db.close(); resolve(); };
-        tx.onerror = () => { db.close(); resolve(); };
-      };
-      req.onerror = () => resolve();
-    });
+  // 3. Quét sạch TẤT CẢ các bảng trong IndexedDB
+  if (window.indexedDB && window.indexedDB.databases) {
+    try {
+      const dbs = await window.indexedDB.databases();
+      for (const dbInfo of dbs) {
+        if (!dbInfo.name) continue;
+        await new Promise((resolve) => {
+          const req = indexedDB.open(dbInfo.name);
+          req.onsuccess = (e) => {
+            const db = e.target.result;
+            const storeNames = Array.from(db.objectStoreNames);
+            if (storeNames.length === 0) { db.close(); return resolve(); }
+            let pending = storeNames.length;
+            storeNames.forEach(sName => {
+              try {
+                const tx = db.transaction(sName, "readwrite");
+                const store = tx.objectStore(sName);
+                const gReq = store.getAll();
+                gReq.onsuccess = () => {
+                  (gReq.result || []).forEach(st => {
+                    if (st && typeof st === 'object' && (codeSet.has(st.studentCode) || codeSet.has(st.id))) {
+                      if (st.aiComment || st.teacherComment || st.comment) {
+                        st.aiComment = "";
+                        st.teacherComment = "";
+                        st.comment = "";
+                        try { store.put(st); } catch(err) {}
+                      }
+                    }
+                  });
+                };
+                tx.oncomplete = () => { if (--pending === 0) { db.close(); resolve(); } };
+                tx.onerror = () => { if (--pending === 0) { db.close(); resolve(); } };
+              } catch (err) {
+                if (--pending === 0) { db.close(); resolve(); }
+              }
+            });
+          };
+          req.onerror = () => resolve();
+        });
+      }
+    } catch (e) {}
   }
 
-  // 4. Cập nhật nhãn "Đã có" -> "Chưa có" ở cột bên trái cho các mã vừa xóa
+  // 4. Đổi nhãn "Đã có" -> "Chưa có" trên giao diện
   const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
     const txt = el.innerText || '';
     return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
@@ -11355,12 +11410,73 @@ window.__CLEAN_STUDENTS__ = async function(targetCodes) {
           }
         }
       });
-      const cb = row.querySelector('input[type="checkbox"]');
-      if (cb && cb.checked) cb.checked = false;
+      if (!isAutoRefreshScan) {
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb && cb.checked) cb.checked = false;
+      }
     }
   });
 };
 
+// 5. BỘ GIÁM SÁT TỰ ĐỘNG SAU KHI REFRESH (F5) VÀ KHI TẠO NHẬN XÉT MỚI
+setInterval(() => {
+  const delSet = getDeletedSet();
+  if (delSet.size > 0) {
+    // Kiểm tra xem trên màn hình có em nào nằm trong danh sách đã xóa mà bị Firebase/F5 hồi sinh chữ "Đã có" không
+    const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
+      const txt = el.innerText || '';
+      return (txt.includes('HSLP') || txt.includes('ĐTB:')) && el.classList.contains('cursor-pointer');
+    });
+
+    let needClean = false;
+    studentRows.forEach(row => {
+      const txt = row.innerText || '';
+      const match = txt.match(/HSLP[\w_]+/i);
+      const code = match ? match[0].trim() : null;
+      if (code && delSet.has(code) && txt.includes('Đã có')) {
+        needClean = true;
+      }
+    });
+
+    if (needClean) {
+      window.__CLEAN_STUDENTS__(Array.from(delSet), true);
+      const ctx = window.__AI_CTX__ || window.__REACT_AI_CONTEXT__;
+      if (ctx && ctx.N && (delSet.has(ctx.N.studentCode) || delSet.has(ctx.N.id))) {
+        if (typeof ctx.S === 'function') ctx.S("");
+      }
+    }
+  }
+}, 400);
+
+// 6. KHI THẦY BẤM "TẠO NHẬN XÉT AI", "BẮT ĐẦU TẠO HÀNG LOẠT" HOẶC "LƯU NHẬN XÉT" -> GỠ KHỎI DANH SÁCH ĐÃ XÓA
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const txt = (btn.innerText || '').trim();
+
+  // Nếu bấm tạo hàng loạt -> Xóa sạch danh sách đen để các em nhận lại nhận xét mới
+  if (txt.includes('Bắt đầu tạo hàng loạt')) {
+    saveDeletedSet(new Set());
+  }
+  // Nếu bấm Tạo nhận xét AI hoặc Lưu nhận xét cho 1 học sinh đang mở -> Gỡ học sinh đó khỏi danh sách đen
+  else if (txt.includes('Tạo nhận xét AI') || txt.includes('Lưu nhận xét') || txt.includes('Viết lại') || txt.includes('Rút ngắn')) {
+    const ctx = window.__AI_CTX__ || window.__REACT_AI_CONTEXT__;
+    if (ctx && ctx.N) {
+      const delSet = getDeletedSet();
+      delSet.delete(ctx.N.studentCode);
+      delSet.delete(ctx.N.id);
+      saveDeletedSet(delSet);
+    } else {
+      // Dự phòng tìm mã HSLP trên khung tiêu đề bên phải
+      const headerMatch = (document.body.innerText || '').match(/HSLP[\w_]+/i);
+      if (headerMatch) {
+        const delSet = getDeletedSet();
+        delSet.delete(headerMatch[0].trim());
+        saveDeletedSet(delSet);
+      }
+    }
+  }
+}, true);
 delBtn.onclick = async function() {
   const studentRows = Array.from(document.querySelectorAll('div, li, button')).filter(el => {
     const txt = el.innerText || '';
